@@ -1,0 +1,8 @@
+# Ignore Maven/Gradle build output directories
+target/
+**/target/
+
+# Optional: ignore common IDE and OS files (kept minimal)
+.idea/
+.vscode/
+.DS_Store
