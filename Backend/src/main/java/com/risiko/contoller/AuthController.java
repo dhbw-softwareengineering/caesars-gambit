@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,5 +40,18 @@ public class AuthController {
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
         }
+    }
+
+    @PostMapping("/signout")
+    public ResponseEntity<?> signout(HttpServletRequest request, HttpServletResponse response) {
+        // This application uses stateless JWTs. There's nothing to invalidate server-side
+        // unless a token blacklist is implemented. To help clients, clear any access token cookie.
+        // If your frontend stores the token in localStorage, it should remove it on signout.
+    jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("accessToken", "");
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+        return ResponseEntity.ok(Map.of("message", "Signed out"));
     }
 }
