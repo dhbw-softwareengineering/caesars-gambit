@@ -1,31 +1,58 @@
 package com.risiko.model;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
 public class Player {
-    private final String username;
+    public final String username;
     private final int playerId;
-    private Map<String, Integer> territories;
+    private Map<Territorries, Integer> territories;
+    public SseEmitter emitter;
 
     public Player() {
         this.username = "Datenbank Connection";
         this.playerId = "Datenbank Connection".hashCode();
     }
 
-    public void distTroops(String territory, int sum) {}
+    public void setTerritories(List<Territorries> territories) {
+        for (Territorries t : territories) {
+            this.territories.put(t, 1);
+        }
+    }
 
-    public void moveTroops(String from, String to, int sum) {}
+    public void distTroops(String territory, int sum) {
+        territories.put(Territorries.valueOf(territory), territories.get(Territorries.valueOf(territory)) + sum);
+    }
 
-    public boolean hasTerritory(String territory) {
+    public void moveTroops(String from, String to, int sum) {
+        territories.put(Territorries.valueOf(from), territories.get(Territorries.valueOf(from)) - sum);
+        territories.put(Territorries.valueOf(to), territories.get(Territorries.valueOf(to)) + sum);
+    }
+
+    public boolean hasTerritory(Territorries territory) {
         return territories.containsKey(territory);
     }
 
-    public void endMove() {}
-
-    public int defend(String territory) {
-        return 0;
+    public int defend(String territory, int lostTroops) {
+        if(territories.get(territory) <= lostTroops) {
+            territories.remove(territory);
+            return 0;
+        }
+        return territories.get(territory) - lostTroops;
     }
 
-    public void getTerritory(String territory) {}
+    public void getTerritory(String territory) {
+        territories.put(Territorries.valueOf(territory), 0);
+    }
 
+    public void askDistTroops(int sum) {
+        try {
+            emitter.send(SseEmitter.event().name("AskDistTroops").data(sum));
+        } catch (IOException e) {
+            emitter.completeWithError(e);
+        }
+    }
 }
