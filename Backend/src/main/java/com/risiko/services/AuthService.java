@@ -1,4 +1,4 @@
-package com.risiko.service;
+package com.risiko.services;
 
 import com.risiko.model.User;
 import com.risiko.repository.UserRepository;
