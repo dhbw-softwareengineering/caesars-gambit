@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8" />
+        <title>Interaktive Karte mit PNG-Hintergrund</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                padding: 20px;
+                background: #f7f7f7;
+            }
+
+            h1 {
+                color: #333;
+            }
+
+            #map-wrapper {
+                position: relative;
+                display: inline-block;
+                width: 100%;
+                max-width: 900px;
+                border: 1px solid #ccc;
+                background: #fff;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+
+            #map-wrapper img.bg {
+                display: block;
+                width: 100%;
+                height: auto;
+            }
+
+            #map {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                user-select: none;
+            }
+
+            /* SVG wird klickbar */
+            #map svg {
+                width: 100%;
+                height: auto;
+                pointer-events: auto;
+                opacity: 0.5;
+            }
+
+            /* Farbe bei Klick */
+            .is-on {
+                fill: lightgreen !important;
+                filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.25));
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Interaktive SVG-Karte mit Hintergrund</h1>
+
+        <div id="map-wrapper">
+            <img src="Karte-fabig.jpg" alt="Hintergrundkarte" class="bg" />
+            <div id="map"></div>
+        </div>
+
+        <script>
+            const SVG_URL = 'Karte-neutral.svg'
+            const REGION_IDS = ['path1764643', 'path1764644'] // IDs aus Inkscape
+
+            fetch(SVG_URL)
+                .then((res) => res.text())
+                .then((svgText) => {
+                    const mapDiv = document.getElementById('map')
+                    mapDiv.innerHTML = svgText
+
+                    const svg = mapDiv.querySelector('svg')
+                    if (!svg) return
+
+                    // Sichtbare Konturen
+                    svg.querySelectorAll(
+                        'path,polygon,rect,circle,ellipse,line,polyline'
+                    ).forEach((el) => {
+                        if (!el.getAttribute('stroke'))
+                            el.setAttribute('stroke', '#222')
+                        if (!el.getAttribute('stroke-width'))
+                            el.setAttribute('stroke-width', '1')
+                        el.setAttribute('vector-effect', 'non-scaling-stroke')
+                    })
+
+                    // Klickbare Regionen aktivieren
+                    REGION_IDS.forEach((id) => {
+                        const el = svg.querySelector(`#${CSS.escape(id)}`)
+                        if (!el) return
+                        el.style.cursor = 'pointer'
+                        el.addEventListener('click', () => {
+                            el.classList.toggle('is-on')
+                        })
+                    })
+                })
+                .catch((err) => {
+                    console.error('SVG konnte nicht geladen werden:', err)
+                })
+        </script>
+    </body>
+</html>
