@@ -37,7 +37,7 @@ public class RoomController {
     public void joinRoom(@PathVariable("roomId") int roomId, HttpServletRequest request) {
         String token = request.getHeader("Authorization").substring(7);
         long userId = authService.getUserIdFromToken(token);
-        if (!roomService.joinRoom(roomId, userId)) {
+        if (!roomService.joinRoom(roomId, userId, request.getParameter("host").equals("true"))) {
             throw new RuntimeException("Room not found");
         }
     }

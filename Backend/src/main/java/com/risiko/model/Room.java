@@ -25,31 +25,53 @@ public class Room {
         gameStarted = false;
     }
 
-    public void sentSomething() {
+    public void joinRoom(long userId, boolean host) {
+        if (gameStarted) {
+            // do some error handling and unexpected error handling
+        }
+        Player player = new Player(userId, userRepository);
+        players.add(player);
+        player.setHost(host);
+        List<SseEmitter> emitters = players.stream()
+            .map(p -> p.emitter)
+            .filter(e -> e != null)
+            .collect(Collectors.toList());
         String data = players.stream()
             .map(p -> "{\"username\":\"" + p.username + "\"}")
             .collect(Collectors.joining(",", "[", "]"));
-        for (Player p : players) {
-            if (p.emitter != null) {
-                try {
-                    p.emitter.send(SseEmitter.event().name("playersInRoom").data(data));
-                } catch (Exception e) {
-                    p.emitter.completeWithError(e);
-                }
-            }
+        gameController.broadcastEvent(emitters, "playerJoined", data);
+    }
+
+    public void leaveRoom(long userId) {
+        if (gameStarted) {
+            // do some error handling and unexpected error handling
         }
+        players = players.stream()
+            .filter(p -> p.getUserId() != userId)
+            .collect(Collectors.toList());
+        List<SseEmitter> emitters = players.stream()
+            .map(p -> p.emitter)
+            .filter(e -> e != null)
+            .collect(Collectors.toList());
+        String data = players.stream()
+            .map(p -> "{\"username\":\"" + p.username + "\", \"host\": \"" + p.isHost() + "\"}")
+            .collect(Collectors.joining(",", "[", "]"));
+        gameController.broadcastEvent(emitters, "playerLeft", data);
     }
 
-    public void joinRoom(long userId) {
-        Player player = new Player(userId, userRepository);
-        players.add(player);
+    public void startGame() {
+        if (gameStarted) {
+            throw new IllegalStateException("Game already started");
+        }
+        gameStarted = true;
+        gamestate = new Gamestate(roomId, players, gameController);
+        gamestate.start();
     }
 
-    public void leaveRoom() {}
-
-    public void startGame() {}
-
-    public void endGame() {}
+    public void endGame() {
+        gameStarted = false;
+        gamestate = null;
+    }
 
     public int getRoomId() {
         return roomId;

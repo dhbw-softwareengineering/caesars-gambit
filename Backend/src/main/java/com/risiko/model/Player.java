@@ -14,6 +14,7 @@ public class Player {
     private final long userId;
     private Map<Territorries, Integer> territories;
     public SseEmitter emitter;
+    private boolean host;
 
     public Player(long userId, UserRepository userRepository) {
         this.userId = userId;
@@ -66,5 +67,13 @@ public class Player {
 
     public long getUserId() {
         return userId;
+    }
+
+    public boolean isHost() {
+        return host;
+    }
+
+    public void setHost(boolean host) {
+        this.host = host;
     }
 }

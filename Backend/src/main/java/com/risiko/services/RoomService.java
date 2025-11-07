@@ -29,10 +29,10 @@ public class RoomService {
         return new ArrayList<>(rooms.values());
     }
 
-    public boolean joinRoom(int roomId, long userId) {
+    public boolean joinRoom(int roomId, long userId, boolean host) {
         Room room = rooms.get(roomId);
         if (room != null) {
-            room.joinRoom(userId);
+            room.joinRoom(userId, host);
             return true;
         }
         return false;
@@ -50,18 +50,5 @@ public class RoomService {
 
     public void removeRoom(int id) {
         rooms.remove(id);
-    }
-
-    // scheduled task that ticks all rooms every 6 seconds
-    @Scheduled(fixedRate = 6000)
-    public void tickRooms() {
-        for (Room room : rooms.values()) {
-            try {
-                room.sentSomething();
-            } catch (Exception e) {
-                // log and continue
-                System.err.println("Error while ticking room " + room.getRoomId() + ": " + e.getMessage());
-            }
-        }
     }
 }
