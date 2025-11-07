@@ -1,3 +1,6 @@
+import { createRoom } from "@/app/room/api/createRoom";
+import { joinRoom } from "@/app/room/api/joinRoom";
+import { useRouter } from "next/router";
 import type { CSSProperties } from "react";
 
 export default function MainMenu() {
@@ -64,6 +67,8 @@ export default function MainMenu() {
         maxWidth: "720px",
     };
 
+    const router = useRouter();
+
     return (
         <main style={containerStyle}>
             <div style={cardStyle}>
@@ -75,8 +80,12 @@ export default function MainMenu() {
                 </header>
 
                 <nav style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    <button style={buttonPrimaryStyle}>Spiel erstellen</button>
-                    <button style={buttonDefaultStyle}>Lobby beitreten</button>
+                    <button style={buttonPrimaryStyle} onClick={async() =>  {
+                        const id = await createRoom();
+                        await joinRoom(id);
+                        router.push(`/room/${id}`);
+                    }}>Spiel erstellen</button>
+                    <button style={buttonDefaultStyle} onClick={async() => {await joinRoom(1); router.push(`/room/1`)} }>Lobby beitreten</button>
                     <button style={buttonDefaultStyle}>Einstellungen</button>
                     <button style={buttonDefaultStyle}>Hilf bei der Entwicklung</button>
                     <button style={buttonDangerStyle}>Abmelden</button>
