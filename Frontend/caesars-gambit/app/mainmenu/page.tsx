@@ -4,6 +4,7 @@ import styles from "./mainmenu.module.css"
 import {useRouter} from "next/navigation";
 import { joinRoom } from "@/components/api/joinRoom";
 import { createRoom } from "@/components/api/createRoom";
+import Button from "@/components/ui/button";
 
 export default function MainMenu() {
     const router = useRouter();
@@ -21,20 +22,16 @@ export default function MainMenu() {
                 </header>
 
                 <nav className={styles.nav}>
-                    <button className={`${styles.buttonBase} ${styles.btnCreateGame}`} onClick={async () => {
+                    <Button variant="primary" onClick={async () => {
                         const room = await createRoom();
                         await joinRoom(room);
                         router.push(`room/${room}`);
-                    }}>Spiel erstellen</button>
+                    }}>Spiel erstellen</Button>
 
                     {!showJoinInput ? (
-                        <button
-                            className={`${styles.buttonBase} ${styles.btnDefault}`}
-                            onClick={() => setShowJoinInput(true)}
-                            type="button"
-                        >
+                        <Button variant="secondary" onClick={() => setShowJoinInput(true)} type="button">
                             Lobby beitreten
-                        </button>
+                        </Button>
                     ) : (
                         <div className={styles.inputWrapper}>
                             <input
@@ -44,8 +41,8 @@ export default function MainMenu() {
                                 onChange={(e) => setRoomId(e.target.value)}
                                 className={styles.input}
                             />
-                            <button
-                                className={`${styles.buttonBase} ${styles.joinBtn}`}
+                            <Button
+                                className={styles.joinBtn}
                                 type="button"
                                 onClick={() => {
                                     console.log("Join room:", roomId);
@@ -55,13 +52,13 @@ export default function MainMenu() {
                                 disabled={!roomId.trim()}
                             >
                                 Join room
-                            </button>
+                            </Button>
                         </div>
                     )}
 
-                    <button className={`${styles.buttonBase} ${styles.btnDefault}`}>Einstellungen</button>
-                    <button className={`${styles.buttonBase} ${styles.btnDefault}`}>Hilf bei der Entwicklung</button>
-                    <button className={`${styles.buttonBase} ${styles.btnLogOut}`}>Abmelden</button>
+                    <Button variant="default">Einstellungen</Button>
+                    <Button variant="default">Hilf bei der Entwicklung</Button>
+                    <Button variant="destructive">Abmelden</Button>
                 </nav>
 
                 <footer className={styles.footer}>

@@ -63,40 +63,6 @@
   margin-top:0;
 }
 
-.buttonBase{
-  width:100%;
-  padding:12px 16px;
-  border-radius:8px;
-  border:none;
-  cursor:pointer;
-  font-weight:600;
-  font-size:16px;
-  text-align:center;
-  display:inline-block;
-  text-decoration:none;
-}
-
-.btnDefault{
-  background-color:var(--accent-weak);
-  border:1px solid var(--accent-border);
-  color:var(--text-main);
-}
-
-.btnCreateGame{
-  background-color:var(--accent);
-  border:none;
-  color:#fff;
-  font-weight:700;
-  font-size:18px;
-}
-
-.btnLogOut{
-  background-color:#1E40AF;
-  border:none;
-  color:#fff;
-  font-weight:700;
-}
-
 .inputWrapper{
   display:flex;
   align-items:center;
@@ -106,16 +72,20 @@
   background:var(--input-bg);
   min-width:260px;
   gap:8px;
+  height:44px; 
+  box-sizing:border-box;
 }
 
 .input{
   flex:1;
   border:none;
   outline:none;
-  padding:10px 12px;
+  padding:0 12px; 
   font-size:14px;
   color:#333;
   border-radius:8px;
+  height:100%;
+  display:block;
 }
 
 .joinBtn{
@@ -138,4 +108,3 @@
   color:var(--muted);
 }
 
-.hidden{ display:none; }
