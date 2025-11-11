@@ -1,10 +1,9 @@
 "use client";
 import { useParams } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function RoomPage() {
-  const params = useParams();
-  const roomId = typeof params === "object" ? (params as any).roomId : params;
+  const { roomId } = useParams() as { roomId?: string };
   const [messages, setMessages] = useState<string[]>([]);
 
   useEffect(() => {
