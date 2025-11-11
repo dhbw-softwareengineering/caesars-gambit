@@ -1,9 +1,10 @@
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+"use client";
+import { useParams } from "next/navigation";
+import { use, useEffect, useState } from "react";
 
 export default function RoomPage() {
-  const router = useRouter();
-  const roomId = Array.isArray(router.query.roomId) ? router.query.roomId[0] : router.query.roomId;
+  const params = useParams();
+  const roomId = typeof params === "object" ? (params as any).roomId : params;
   const [messages, setMessages] = useState<string[]>([]);
 
   useEffect(() => {

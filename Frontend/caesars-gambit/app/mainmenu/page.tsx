@@ -1,8 +1,12 @@
 "use client";
-import React, { useState } from "react";
-import styles from "./mainmenu.module.css";
+import { useState } from "react";
+import styles from "./mainmenu.module.css"
+import {useRouter} from "next/navigation";
+import { joinRoom } from "@/components/api/joinRoom";
+import { createRoom } from "@/components/api/createRoom";
 
 export default function MainMenu() {
+    const router = useRouter();
     const [showJoinInput, setShowJoinInput] = useState(false);
     const [roomId, setRoomId] = useState("");
 
@@ -17,7 +21,11 @@ export default function MainMenu() {
                 </header>
 
                 <nav className={styles.nav}>
-                    <button className={`${styles.buttonBase} ${styles.btnCreateGame}`}>Spiel erstellen</button>
+                    <button className={`${styles.buttonBase} ${styles.btnCreateGame}`} onClick={async () => {
+                        const room = await createRoom();
+                        await joinRoom(room);
+                        router.push(`room/${room}`);
+                    }}>Spiel erstellen</button>
 
                     {!showJoinInput ? (
                         <button
@@ -41,6 +49,8 @@ export default function MainMenu() {
                                 type="button"
                                 onClick={() => {
                                     console.log("Join room:", roomId);
+                                    joinRoom(Number(roomId));
+                                    router.push(`/room/${roomId}`);
                                 }}
                                 disabled={!roomId.trim()}
                             >
