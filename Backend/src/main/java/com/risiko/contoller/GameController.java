@@ -4,56 +4,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.risiko.model.Player;
 import com.risiko.model.Room;
-import com.risiko.services.AuthService;
 import com.risiko.services.RoomService;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @RestController
-@RequestMapping("/api/game")
+@RequestMapping("/api")
 public class GameController {
     private final RoomService roomService;
-    private final AuthService authService;
 
     @Autowired
-    public GameController(RoomService roomService, AuthService authService) {
+    public GameController(RoomService roomService) {
         this.roomService = roomService;
-        this.authService = authService;
     }
 
-    @GetMapping("/stream/{roomId}")
-    public SseEmitter stream(@PathVariable("roomId") String roomId, @RequestParam(value = "token", required = false) String tokenParam, HttpServletRequest request) {
-        String token = tokenParam;
-        if (token == null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
-            }
-        }
-        if (token == null) throw new RuntimeException("Missing token");
-        long userId = authService.getUserIdFromToken(token);
-        
-        Room room = roomService.getRoomById(Integer.parseInt(roomId));
-        if (room == null) {
-            throw new RuntimeException("Room not found");
-        }
+    @PostMapping("/stream")
+    public SseEmitter stream() {
+        SseEmitter emitter = new SseEmitter(0L); // kein Timeout
 
-        SseEmitter emitter = new SseEmitter(0L);
-        
-        Player player = room.getPlayers().stream()
-            .filter(p -> userId == p.getUserId())
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("Player not found in room"));
-
-        player.setEmitter(emitter);
-        emitter.onCompletion(() -> player.setEmitter(null));
-        emitter.onTimeout(() -> player.setEmitter(null));
-        emitter.onError(e -> player.setEmitter(null));
+        // TODO: mit player veknüpfen
+        //emitter.onCompletion(() -> emitters.remove(emitter));
+        //emitter.onTimeout(() -> emitters.remove(emitter));
+        //emitter.onError(e -> emitters.remove(emitter));
 
         try {
             emitter.send(SseEmitter.event().name("init").data("connected"));

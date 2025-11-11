@@ -37,8 +37,4 @@ public class AuthService {
         if (!passwordEncoder.matches(password, u.getPassword())) throw new RuntimeException("Invalid credentials");
         return jwtUtil.generateToken(u.getEmail(), u.getId());
     }
-
-    public long getUserIdFromToken(String token) {
-        return jwtUtil.getUserIdFromToken(token);
-    }
 }

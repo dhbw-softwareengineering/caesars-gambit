@@ -1,12 +1,9 @@
 package com.risiko.model;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.risiko.contoller.GameController;
-import com.risiko.repository.UserRepository;
 
 public class Room {
     private final int roomId;
@@ -14,32 +11,13 @@ public class Room {
     private boolean gameStarted;
     private Gamestate gamestate;
     private final GameController gameController;
-    private final UserRepository userRepository;
 
-    public Room(int roomId, GameController gameController, UserRepository userRepository) {
+    public Room(int roomId, GameController gameController) {
         this.roomId = roomId;
         this.gameController = gameController;
-        this.userRepository = userRepository;
-        players = new ArrayList<>();
-        gameStarted = false;
     }
 
-    public void sentSomething() {
-        for (Player p : players) {
-            if (p.emitter != null) {
-                try {
-                    p.emitter.send(SseEmitter.event().name("ping").data(p.username));
-                } catch (Exception e) {
-                    p.emitter.completeWithError(e);
-                }
-            }
-        }
-    }
-
-    public void joinRoom(long userId) {
-        Player player = new Player(userId, userRepository);
-        players.add(player);
-    }
+    public void joinRoom() {}
 
     public void leaveRoom() {}
 
@@ -53,10 +31,6 @@ public class Room {
 
     public Gamestate getGamestate() {
         return gamestate;
-    }
-
-    public List<Player> getPlayers() {
-        return players;
     }
 
 }

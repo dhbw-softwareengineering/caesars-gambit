@@ -1,5 +1,6 @@
 import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { BadgeCheckIcon, ChevronRightIcon } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
   return (

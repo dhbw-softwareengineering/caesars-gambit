@@ -3,22 +3,18 @@ package com.risiko.model;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import com.risiko.repository.UserRepository;
-
 public class Player {
     public final String username;
-    private final long userId;
+    private final int playerId;
     private Map<Territorries, Integer> territories;
     public SseEmitter emitter;
 
-    public Player(long userId, UserRepository userRepository) {
-        this.userId = userId;
-        Optional<User> user = userRepository.findById(userId);
-        this.username = user.isPresent() ? user.get().getUsername() : "Unknown";
+    public Player() {
+        this.username = "Datenbank Connection";
+        this.playerId = "Datenbank Connection".hashCode();
     }
 
     public void setTerritories(List<Territorries> territories) {
@@ -58,13 +54,5 @@ public class Player {
         } catch (IOException e) {
             emitter.completeWithError(e);
         }
-    }
-
-    public void setEmitter(SseEmitter emitter) {
-        this.emitter = emitter;
-    }
-
-    public long getUserId() {
-        return userId;
     }
 }
