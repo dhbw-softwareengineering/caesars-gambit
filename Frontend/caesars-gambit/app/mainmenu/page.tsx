@@ -24,7 +24,7 @@ export default function MainMenu() {
                 <nav className={styles.nav}>
                     <Button variant="primary" onClick={async () => {
                         const room = await createRoom();
-                        await joinRoom(room);
+                        await joinRoom(room, true);
                         router.push(`room/${room}`);
                     }}>Spiel erstellen</Button>
 

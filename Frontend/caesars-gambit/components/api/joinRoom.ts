@@ -1,4 +1,4 @@
-export async function joinRoom(id: number) {
+export async function joinRoom(id: number, host: boolean = false) {
     const token =  localStorage.getItem('accessToken');
 
     if (!token) {
@@ -10,7 +10,8 @@ export async function joinRoom(id: number) {
         headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify({ host }),
     });
 
     if (!response.ok) {

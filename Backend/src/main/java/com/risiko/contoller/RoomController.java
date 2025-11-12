@@ -3,6 +3,7 @@ package com.risiko.contoller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 import com.risiko.model.Room;
 import com.risiko.repository.UserRepository;
@@ -34,10 +35,16 @@ public class RoomController {
     }
 
     @PostMapping("/join/{roomId}")
-    public void joinRoom(@PathVariable("roomId") int roomId, HttpServletRequest request) {
+    public void joinRoom(@PathVariable("roomId") int roomId, HttpServletRequest request, @RequestBody(required = false) Map<String, Object> body) {
         String token = request.getHeader("Authorization").substring(7);
         long userId = authService.getUserIdFromToken(token);
-        if (!roomService.joinRoom(roomId, userId, request.getParameter("host").equals("true"))) {
+        boolean host = false;
+        if (body != null && body.containsKey("host")) {
+            Object hostObj = body.get("host");
+            if (hostObj instanceof Boolean) host = (Boolean) hostObj;
+            else host = Boolean.parseBoolean(hostObj.toString());
+        }
+        if (!roomService.joinRoom(roomId, userId, host)) {
             throw new RuntimeException("Room not found");
         }
     }
