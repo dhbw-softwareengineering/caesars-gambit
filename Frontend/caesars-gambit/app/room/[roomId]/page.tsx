@@ -1,10 +1,15 @@
 "use client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+
 
 export default function RoomPage() {
   const { roomId } = useParams() as { roomId?: string };
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<MessageEvent[]>([]);
+  const [playerNames, setPlayerNames] = useState<String[]>([])
+
 
   useEffect(() => {
     if (!roomId) return;
@@ -25,10 +30,11 @@ export default function RoomPage() {
       console.log("Connected:", e.data);
     });
 
-    // generic message handler
-    eventSource.onmessage = (e: MessageEvent) => {
-      setMessages((prev) => [...prev, e.data]);
-    };
+    eventSource.addEventListener("playerJoined", (e: MessageEvent) => {
+      const data: { username: string; host: boolean }[] = JSON.parse(e.data);
+      setPlayerNames(data.map(player => player.username));
+      console.log(data.map(player => player.username))
+    })
 
     eventSource.onerror = (err) => {
       console.error("SSE error", err);
@@ -38,14 +44,62 @@ export default function RoomPage() {
     return () => eventSource.close();
   }, [roomId]);
 
+  const router = useRouter();
+
+  const handleLeaveRoom = async () => {
+    if (!roomId) return;
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+    try {
+      await fetch(`${apiBase}/api/room/leave/${roomId}`, {
+        method: "POST",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+    } catch (err) {
+      console.error("Failed to leave room", err);
+    }
+
+    router.push("/mainmenu");
+  };
+
+
+ 
+
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>Room {roomId}</h1>
-      <ul>
-        {messages.map((msg, i) => (
-          <li key={i}>{msg}</li>
+    <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-4">
+    
+      <h1 className="text-2xl font-semibold text-center">Risiko online</h1>
+
+      
+      <p className="text-center text-sm text-gray-500">#Raum: {roomId}</p>
+
+      {messages.map( (e:MessageEvent) => {return <span>{e.data}source: {e.source} origin: {e.origin}  {e.ports}</span>})}
+      <div className="flex flex-col gap-2 w-56">
+        {playerNames.map((name, index) => (
+          <div key={index} className="border border-gray-300 rounded-md px-3 py-2">
+            {name}
+          </div>
         ))}
-      </ul>
+      </div>
+
+      <div className="flex flex-col gap-4 mt-6 w-48">
+        <Button variant="primary">
+          Start
+        </Button>
+        
+        <Button variant="primary">
+          share room link
+        </Button>
+        
+          {/* Leave Room Button */}
+          <Button variant="destructive" onClick={handleLeaveRoom}>
+            Leave room
+          </Button>
+      </div>
     </div>
   );
 }

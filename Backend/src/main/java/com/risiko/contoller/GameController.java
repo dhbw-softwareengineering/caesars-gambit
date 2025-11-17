@@ -56,7 +56,7 @@ public class GameController {
         emitter.onError(e -> player.setEmitter(null));
 
         try {
-            emitter.send(SseEmitter.event().name("init").data("connected"));
+            emitter.send(SseEmitter.event().name("init").data("connected").build());
         } catch (IOException e) {
             emitter.completeWithError(e);
         }
@@ -85,7 +85,7 @@ public class GameController {
     public void broadcastEvent(List<SseEmitter> emitters, String eventName, String data) {
         for (SseEmitter emitter : emitters) {
             try {
-                emitter.send(SseEmitter.event().name(eventName).data(data));
+                emitter.send(SseEmitter.event().name(eventName).data(data).build());
             } catch (IOException e) {
                 emitter.completeWithError(e);
             }

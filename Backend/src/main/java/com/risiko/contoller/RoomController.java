@@ -48,6 +48,16 @@ public class RoomController {
             throw new RuntimeException("Room not found");
         }
     }
+    
+    @PostMapping("/leave/{roomId}")
+     public void leaveRoom(@PathVariable("roomId") int roomId, HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        long userId = authService.getUserIdFromToken(token);
+        if (!roomService.leaveRoom(roomId, userId)) {
+            throw new RuntimeException("Room not found");
+        }
+    }
+
 
     @GetMapping
     public List<Room> listRooms() {
