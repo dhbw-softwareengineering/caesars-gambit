@@ -28,7 +28,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Login failed");
       localStorage.setItem("accessToken", data.accessToken);
-      router.push("/");
+      router.push("/mainmenu");
     } catch (e: any) {
       setErr(e?.message || String(e));
     }
