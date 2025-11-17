@@ -37,7 +37,7 @@ public class Room {
             .filter(e -> e != null)
             .collect(Collectors.toList());
         String data = players.stream()
-            .map(p -> "{\"username\":\"" + p.username + "\"}")
+            .map(p -> "{\"username\":\"" + p.username + "\", \"host\": \"" + p.isHost() + "\"}")
             .collect(Collectors.joining(",", "[", "]"));
         gameController.broadcastEvent(emitters, "playerJoined", data);
     }
