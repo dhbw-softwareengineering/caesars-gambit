@@ -3,9 +3,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { leaveRoom } from "@/components/api/leaveRoom";
 
 
 export default function RoomPage() {
+  const router = useRouter();
   const { roomId } = useParams() as { roomId?: string };
   const [messages, setMessages] = useState<MessageEvent[]>([]);
   const [playerNames, setPlayerNames] = useState<String[]>([])
@@ -44,31 +46,6 @@ export default function RoomPage() {
     return () => eventSource.close();
   }, [roomId]);
 
-  const router = useRouter();
-
-  const handleLeaveRoom = async () => {
-    if (!roomId) return;
-
-    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
-    try {
-      await fetch(`${apiBase}/api/room/leave/${roomId}`, {
-        method: "POST",
-        headers: {
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-    } catch (err) {
-      console.error("Failed to leave room", err);
-    }
-
-    router.push("/mainmenu");
-  };
-
-
- 
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-4">
     
@@ -96,7 +73,7 @@ export default function RoomPage() {
         </Button>
         
           {/* Leave Room Button */}
-          <Button variant="destructive" onClick={handleLeaveRoom}>
+          <Button variant="destructive" onClick={async () => { await leaveRoom(Number(roomId)); router.push('/mainmenu'); }}>
             Leave room
           </Button>
       </div>
