@@ -38,6 +38,12 @@ export default function RoomPage() {
       console.log(data.map(player => player.username))
     })
 
+    eventSource.addEventListener("playerLeft", (e: MessageEvent) => {
+      const data: { username: string; host: boolean }[] = JSON.parse(e.data);
+      setPlayerNames(data.map(player => player.username));
+      
+    })
+
     eventSource.onerror = (err) => {
       console.error("SSE error", err);
       eventSource.close();
@@ -72,10 +78,9 @@ export default function RoomPage() {
           share room link
         </Button>
         
-          {/* Leave Room Button */}
-          <Button variant="destructive" onClick={async () => { await leaveRoom(Number(roomId)); router.push('/mainmenu'); }}>
-            Leave room
-          </Button>
+        <Button variant="destructive" onClick={async () => { await leaveRoom(Number(roomId)); router.push('/mainmenu'); }}>
+          Leave room
+        </Button>
       </div>
     </div>
   );
