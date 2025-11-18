@@ -1,10 +1,17 @@
 "use client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { leaveRoom } from "@/components/api/leaveRoom";
+
+
 export default function RoomPage() {
+  const router = useRouter();
   const { roomId } = useParams() as { roomId?: string };
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<MessageEvent[]>([]);
+  const [playerNames, setPlayerNames] = useState<String[]>([]);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!roomId) return;
@@ -22,13 +29,16 @@ export default function RoomPage() {
     const eventSource = new EventSource(url);
 
     eventSource.addEventListener("init", (e: MessageEvent) => {
-      console.log("Connected:", e.data);
+      playerListUpdated(e);
     });
 
-    // generic message handler
-    eventSource.onmessage = (e: MessageEvent) => {
-      setMessages((prev) => [...prev, e.data]);
-    };
+    eventSource.addEventListener("playerJoined", (e: MessageEvent) => {
+      playerListUpdated(e);
+    })
+
+    eventSource.addEventListener("playerLeft", (e: MessageEvent) => {
+      playerListUpdated(e);
+    })
 
     eventSource.onerror = (err) => {
       console.error("SSE error", err);
@@ -38,14 +48,46 @@ export default function RoomPage() {
     return () => eventSource.close();
   }, [roomId]);
 
+  function playerListUpdated(e: MessageEvent) {
+      const data: { username: string; host: boolean }[] = JSON.parse(e.data);
+      setPlayerNames(data.map(player => player.username));
+  }
+
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>Room {roomId}</h1>
-      <ul>
-        {messages.map((msg, i) => (
-          <li key={i}>{msg}</li>
+    <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-4">
+    
+      <h1 className="text-2xl font-semibold text-center">Risiko online</h1>
+
+      
+      <p className="text-center text-sm text-gray-500">#Raum: {roomId}</p>
+
+      {messages.map( (e:MessageEvent) => {return <span>{e.data}source: {e.source} origin: {e.origin}  {e.ports}</span>})}
+      <div className="flex flex-col gap-2 w-56">
+        {playerNames.map((name, index) => (
+          <div key={index} className="border border-gray-300 rounded-md px-3 py-2">
+            {name}
+          </div>
         ))}
-      </ul>
+      </div>
+
+      <div className="flex flex-col gap-4 mt-6 w-48">
+        <Button variant="primary">
+          Start
+        </Button>
+        
+        <Button variant="primary" onClick={async () => {
+          const url = window.location.href;
+          await navigator.clipboard.writeText(url);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+          }}>
+          {copied ? "Kopiert!" : "Raumlink kopieren"}
+        </Button>
+        
+        <Button variant="destructive" onClick={async () => { await leaveRoom(Number(roomId)); router.push('/mainmenu'); }}>
+          Raum verlassen
+        </Button>
+      </div>
     </div>
   );
 }

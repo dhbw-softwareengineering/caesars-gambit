@@ -36,10 +36,7 @@ public class Room {
             .map(p -> p.emitter)
             .filter(e -> e != null)
             .collect(Collectors.toList());
-        String data = players.stream()
-            .map(p -> "{\"username\":\"" + p.username + "\"}")
-            .collect(Collectors.joining(",", "[", "]"));
-        gameController.broadcastEvent(emitters, "playerJoined", data);
+        gameController.broadcastEvent(emitters, "playerJoined", getLobbyData());
     }
 
     public void leaveRoom(long userId) {
@@ -53,10 +50,13 @@ public class Room {
             .map(p -> p.emitter)
             .filter(e -> e != null)
             .collect(Collectors.toList());
-        String data = players.stream()
+        gameController.broadcastEvent(emitters, "playerLeft", getLobbyData());
+    }
+
+    public String getLobbyData() {
+        return players.stream()
             .map(p -> "{\"username\":\"" + p.username + "\", \"host\": \"" + p.isHost() + "\"}")
             .collect(Collectors.joining(",", "[", "]"));
-        gameController.broadcastEvent(emitters, "playerLeft", data);
     }
 
     public void startGame() {

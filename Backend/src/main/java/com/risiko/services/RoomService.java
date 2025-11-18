@@ -37,6 +37,16 @@ public class RoomService {
         }
         return false;
     }
+
+    public boolean leaveRoom(int roomId, long userId) {
+        Room room = rooms.get(roomId);
+        if (room != null) {
+            room.leaveRoom(userId);
+            return true;
+        }
+        return false;
+    }
+
     public Room createRoom(GameController gameController) {
         int id = nextId.getAndIncrement();
         Room room = new Room(id, gameController, userRepository);
