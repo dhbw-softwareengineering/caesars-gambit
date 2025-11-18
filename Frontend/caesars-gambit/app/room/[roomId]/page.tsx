@@ -10,8 +10,8 @@ export default function RoomPage() {
   const router = useRouter();
   const { roomId } = useParams() as { roomId?: string };
   const [messages, setMessages] = useState<MessageEvent[]>([]);
-  const [playerNames, setPlayerNames] = useState<String[]>([])
-
+  const [playerNames, setPlayerNames] = useState<String[]>([]);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!roomId) return;
@@ -29,19 +29,15 @@ export default function RoomPage() {
     const eventSource = new EventSource(url);
 
     eventSource.addEventListener("init", (e: MessageEvent) => {
-      console.log("Connected:", e.data);
+      playerListUpdated(e);
     });
 
     eventSource.addEventListener("playerJoined", (e: MessageEvent) => {
-      const data: { username: string; host: boolean }[] = JSON.parse(e.data);
-      setPlayerNames(data.map(player => player.username));
-      console.log(data.map(player => player.username))
+      playerListUpdated(e);
     })
 
     eventSource.addEventListener("playerLeft", (e: MessageEvent) => {
-      const data: { username: string; host: boolean }[] = JSON.parse(e.data);
-      setPlayerNames(data.map(player => player.username));
-      
+      playerListUpdated(e);
     })
 
     eventSource.onerror = (err) => {
@@ -51,6 +47,11 @@ export default function RoomPage() {
 
     return () => eventSource.close();
   }, [roomId]);
+
+  function playerListUpdated(e: MessageEvent) {
+      const data: { username: string; host: boolean }[] = JSON.parse(e.data);
+      setPlayerNames(data.map(player => player.username));
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-4">
@@ -74,12 +75,17 @@ export default function RoomPage() {
           Start
         </Button>
         
-        <Button variant="primary">
-          share room link
+        <Button variant="primary" onClick={async () => {
+          const url = window.location.href;
+          await navigator.clipboard.writeText(url);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+          }}>
+          {copied ? "Kopiert!" : "Raumlink kopieren"}
         </Button>
         
         <Button variant="destructive" onClick={async () => { await leaveRoom(Number(roomId)); router.push('/mainmenu'); }}>
-          Leave room
+          Raum verlassen
         </Button>
       </div>
     </div>

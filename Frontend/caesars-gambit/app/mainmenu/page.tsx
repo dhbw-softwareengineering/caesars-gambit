@@ -51,7 +51,7 @@ export default function MainMenu() {
                                 }}
                                 disabled={!roomId.trim()}
                             >
-                                Join room
+                                Raum beitreten
                             </Button>
                         </div>
                     )}

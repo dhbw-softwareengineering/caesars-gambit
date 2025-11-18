@@ -29,7 +29,7 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Register failed");
       localStorage.setItem("accessToken", data.accessToken);
-      router.push("/");
+      router.push("/mainmenu");
     } catch (e: any) {
       setErr(e?.message || String(e));
     }

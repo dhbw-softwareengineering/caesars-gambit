@@ -56,7 +56,7 @@ public class GameController {
         emitter.onError(e -> player.setEmitter(null));
 
         try {
-            emitter.send(SseEmitter.event().name("init").data("connected").build());
+            emitter.send(SseEmitter.event().name("init").data(room.getLobbyData()).build());
         } catch (IOException e) {
             emitter.completeWithError(e);
         }
