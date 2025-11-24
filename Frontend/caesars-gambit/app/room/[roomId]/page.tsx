@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { leaveRoom } from "@/components/api/leaveRoom";
+import { send } from "process";
+import { sendMessage } from "@/components/api/sendMessage";
 
 
 export default function RoomPage() {
@@ -12,6 +14,8 @@ export default function RoomPage() {
   const [messages, setMessages] = useState<MessageEvent[]>([]);
   const [playerNames, setPlayerNames] = useState<String[]>([]);
   const [copied, setCopied] = useState(false);
+  const [chatMessages, setChatMessages] = useState<String[]>([]);
+  const [messageInput, setMessageInput] = useState<string>("");
 
   useEffect(() => {
     if (!roomId) return;
@@ -34,11 +38,16 @@ export default function RoomPage() {
 
     eventSource.addEventListener("playerJoined", (e: MessageEvent) => {
       playerListUpdated(e);
-    })
+    });
 
     eventSource.addEventListener("playerLeft", (e: MessageEvent) => {
       playerListUpdated(e);
-    })
+    });
+
+    eventSource.addEventListener("chatMessage", (e: MessageEvent) => {
+      const data: { username: string; message: string } = JSON.parse(e.data);
+      setChatMessages((prev) => [...prev, `${data.username}: ${data.message}`]);
+    });
 
     eventSource.onerror = (err) => {
       console.error("SSE error", err);
@@ -87,6 +96,22 @@ export default function RoomPage() {
         <Button variant="destructive" onClick={async () => { await leaveRoom(Number(roomId)); router.push('/mainmenu'); }}>
           Raum verlassen
         </Button>
+        <div style={{height: "400px", overflow: "scroll"}} >
+          {chatMessages.map((msg, index) => (
+            <div key={index} className="border border-gray-300 rounded-md px-3 py-2 my-1">
+              {msg}
+            </div>
+          ))}
+        </div>
+        <input
+            placeholder="Nachricht"
+            value={messageInput}
+            onChange={(e) => setMessageInput(e.target.value)}
+        />
+        <button
+            type="button"
+            onClick={async () => {await sendMessage(Number(roomId), messageInput)}
+            } >Senden</button>
       </div>
     </div>
   );

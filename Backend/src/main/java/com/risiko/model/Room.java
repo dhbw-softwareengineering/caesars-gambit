@@ -85,4 +85,20 @@ public class Room {
         return players;
     }
 
+    public void sendMessage(long userId, String message) {
+        Player sender = players.stream()
+            .filter(p -> p.getUserId() == userId)
+            .findFirst()
+            .orElse(null);
+        if (sender == null) {
+            throw new IllegalArgumentException("User not in room");
+        }
+        String formattedMessage = "{\"username\":\"" + sender.username + "\", \"message\":\"" + message + "\"}";
+        List<SseEmitter> emitters = players.stream()
+            .map(p -> p.emitter)
+            .filter(e -> e != null)
+            .collect(Collectors.toList());
+        gameController.broadcastEvent(emitters, "chatMessage", formattedMessage);
+    }
+
 }
