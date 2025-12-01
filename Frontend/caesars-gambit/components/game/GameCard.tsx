@@ -61,8 +61,6 @@ export default function GameCard({ onRegionClick }: GameCardProps) {
 
     return (
         <>
-            <h1>test</h1>
-
             <div className={styles.mapWrapper}>
                 <Image
                     src={KarteFabig}
