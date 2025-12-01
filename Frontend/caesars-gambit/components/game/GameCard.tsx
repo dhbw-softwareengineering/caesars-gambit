@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
-import KarteFabig from '../../../../assets/Karte-fabig.jpg'
-import KarteSvg from '../../../../assets/Karte-neutral.svg'
 import styles from './GameCard.module.css'
+
+const KARTE_SVG_PATH = '/assets/Karte-neutral.svg'
+const KARTE_FABIG_PATH = '/assets/Karte-fabig.jpg'
 
 export interface GameCardProps {
     onRegionClick?: (regionId: string) => void
@@ -16,8 +17,8 @@ export default function GameCard({ onRegionClick }: GameCardProps) {
         const container = svgContainerRef.current
         if (!container) return
 
-        // fetch weil <img src="..."> kein DOM-SVG ist
-        fetch(KarteSvg.src)
+        // fetch SVG von public/assets
+        fetch(KARTE_SVG_PATH)
             .then((res) => res.text())
             .then((svgText) => {
                 container.innerHTML = svgText
@@ -63,10 +64,12 @@ export default function GameCard({ onRegionClick }: GameCardProps) {
         <>
             <div className={styles.mapWrapper}>
                 <Image
-                    src={KarteFabig}
+                    src={KARTE_FABIG_PATH}
                     alt="Spielkarte"
                     className={styles.mapBg}
                     priority
+                    width={1200}
+                    height={800}
                 />
 
                 <div ref={svgContainerRef} className={styles.mapSvgContainer} />
