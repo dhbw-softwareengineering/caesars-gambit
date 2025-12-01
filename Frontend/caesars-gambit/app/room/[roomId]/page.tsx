@@ -6,15 +6,17 @@ import { Button } from "@/components/ui/button";
 import { leaveRoom } from "@/components/api/leaveRoom";
 import { Chat } from "@/components/ui/chat";
 
-
-
-
 export default function RoomPage() {
   const router = useRouter();
   const { roomId } = useParams() as { roomId?: string };
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
-  const [chatMessages, setChatMessages] = useState<string[]>([]);
+  const [chatMessages, setChatMessages] = useState<{username: string; message:string}[]>([]);
+
+  function playerListUpdated(e: MessageEvent) {
+      const data: { username: string; host: boolean }[] = JSON.parse(e.data);
+      setPlayerNames(data.map(player => player.username));
+  }
 
   useEffect(() => {
     if (!roomId) return;
@@ -22,7 +24,7 @@ export default function RoomPage() {
     const token = localStorage.getItem("accessToken");
     const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-  const url = `${apiBase}/api/game/stream/${roomId}?token=${encodeURIComponent(token!)}`;
+    const url = `${apiBase}/api/game/stream/${roomId}?token=${encodeURIComponent(token!)}`;
     const eventSource = new EventSource(url);
 
     eventSource.addEventListener("init", (e: MessageEvent) => playerListUpdated(e));
@@ -31,7 +33,7 @@ export default function RoomPage() {
 
     eventSource.addEventListener("chatMessage", (e: MessageEvent) => {
       const data: { username: string; message: string } = JSON.parse(e.data);
-      setChatMessages((prev) => [...prev, `${data.username}: ${data.message}`]); //todo map draus machen 
+      setChatMessages((prev) => [...prev, data]); 
     });
 
     eventSource.onerror = (err) => {
@@ -41,43 +43,6 @@ export default function RoomPage() {
 
     return () => eventSource.close();
   }, [roomId]);
-
-  function playerListUpdated(e: MessageEvent) {
-    try {
-      const parsed = JSON.parse(e.data);
-      // parsed may be an array of players or a single player or an array of usernames
-      if (Array.isArray(parsed)) {
-        if (parsed.length === 0) {
-          setPlayerNames([]);
-          return;
-        }
-        // array of objects?
-        if (typeof parsed[0] === "object") {
-          setPlayerNames(parsed.map((p: any) => String(p.username ?? p.name ?? "")));
-          return;
-        }
-        // array of strings
-        setPlayerNames(parsed.map((p: any) => String(p)));
-        return;
-      }
-
-      // single object with username
-      if (parsed && typeof parsed === "object" && typeof parsed.username === "string") {
-        setPlayerNames([parsed.username]);
-        return;
-      }
-
-      // single username string
-      if (typeof parsed === "string") {
-        setPlayerNames([parsed]);
-        return;
-      }
-
-      console.warn("playerListUpdated: unexpected payload", parsed);
-    } catch (err) {
-      console.error("playerListUpdated: parse error", err, e.data);
-    }
-  }
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -103,10 +68,9 @@ export default function RoomPage() {
         </div>
         <div className="grid grid-cols-3 gap-10 items-start">
 
-        {/* LEFT: Player List */}
         <aside className="col-span-1 max-w-[20rem] ">
-          <h2 className="text-sm font-semibold text-gray-600 mb-4">Spieler</h2>
           <div className="bg-white border rounded-md p-3 shadow-sm w-full mx-auto">
+            <h2 className="text-sm font-semibold text-gray-600 mb-4">Spieler</h2>
             <div className="flex flex-col gap-2">
               {playerNames.length === 0 && (
                 <div className="text-sm text-gray-400">Noch keine Spieler</div>
@@ -121,7 +85,6 @@ export default function RoomPage() {
           </div>
         </aside>
 
-        {/* CENTER: Controls */}
         <main className="col-span-1 self-center flex flex-col items-center">
           <div className="flex flex-col gap-4 w-48">
             <Button variant="primary" className="w-full" disabled={playerNames.length < 2}>
@@ -138,9 +101,7 @@ export default function RoomPage() {
           </div>
         </main>
 
-        {/* RIGHT: Chat */}
         <aside className="col-span-1 max-w-[20rem]">
-          <h2 className="text-sm font-semibold text-gray-600 mb-4">Chat</h2>
           <div className="bg-white border rounded-md p-3 shadow-sm">
             <Chat msg={chatMessages} roomId={roomId} />
           </div>

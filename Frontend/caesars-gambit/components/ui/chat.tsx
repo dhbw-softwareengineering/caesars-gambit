@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { sendMessage } from "../api/sendMessage";
+import { useGetCurrentUser } from "../api/getCurrentUser";
 
 type ChatProps = {
-  msg: string[];
+  msg: { username: string; message: string }[];
   roomId?: string | number;
 };
 
@@ -10,23 +11,12 @@ export function Chat({ msg, roomId }: ChatProps) {
   const [messageInput, setMessageInput] = useState<string>("");
   const listRef = useRef<HTMLDivElement | null>(null);
   const numericRoomId = typeof roomId === "string" ? Number(roomId) : (roomId as number | undefined);
+  const user = useGetCurrentUser();
 
-  // scroll to bottom when messages change
   useEffect(() => {
     if (!listRef.current) return;
     listRef.current.scrollTop = listRef.current.scrollHeight;
   }, [msg]);
-
-  const parseMessage = (raw: string) => {
-    // try to split "username: message" else fallback
-    const idx = raw.indexOf(":");
-    if (idx > 0) {
-      const username = raw.slice(0, idx).trim();
-      const content = raw.slice(idx + 1).trim();
-      return { username, content };
-    }
-    return { username: "", content: raw };
-  };
 
   const handleSend = async () => {
     if (!messageInput.trim()) return;
@@ -39,6 +29,10 @@ export function Chat({ msg, roomId }: ChatProps) {
       console.error("Failed to send message", err);
     }
   };
+
+if (user === null) {
+  return <div>Loading...</div>;
+}
 
   return (
     <div className="w-full">
@@ -54,10 +48,9 @@ export function Chat({ msg, roomId }: ChatProps) {
           <div className="text-center text-sm text-gray-400">Kein Chatverlauf</div>
         )}
 
-        {msg.map((raw, index) => {
-          const { username, content } = parseMessage(raw);
-          const initials = username
-            ? username
+        {msg.map((item, index) => {
+          const initials = item.username
+            ? item.username
                 .split(" ")
                 .map((s) => s.charAt(0))
                 .join("")
@@ -65,20 +58,33 @@ export function Chat({ msg, roomId }: ChatProps) {
                 .toUpperCase()
             : "?";
 
+          const isOwnMessage = user && user.username === item.username;
+
           return (
             <div key={index} className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-700">
-                {initials}
-              </div>
-              <div className="flex-1">
-                <div className="text-xs text-slate-500">{username}</div>
-                <div className="mt-1 bg-slate-50 px-3 py-2 rounded-md text-sm text-slate-800 border border-slate-100">
-                  {content}
+              {isOwnMessage ? (
+                <div className="w-full flex justify-end">
+                  <div className="max-w-xs px-3 bg-slate-50 py-2 rounded-md text-slate-800 text-sm">
+                    {item.message}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-700">
+                    {initials}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-slate-500">{item.username}</div>
+                    <div className="mt-1 bg-slate-50 px-3 py-2 rounded-md text-sm text-slate-800 border border-slate-100">
+                      {item.message}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           );
-        })}
+        })
+      }
       </div>
 
       <div className="mt-3 flex gap-2">
