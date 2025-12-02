@@ -1,6 +1,8 @@
 package com.risiko.model;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,9 +25,14 @@ public class Player {
     }
 
     public void setTerritories(List<Territorries> territories) {
+        this.territories = new HashMap<>();
         for (Territorries t : territories) {
             this.territories.put(t, 1);
         }
+    }
+
+    public java.util.Map<Territorries, Integer> getTerritories() {
+        return territories == null ? Collections.emptyMap() : Collections.unmodifiableMap(territories);
     }
 
     public void distTroops(String territory, int sum) {

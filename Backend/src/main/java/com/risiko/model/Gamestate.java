@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -47,18 +48,25 @@ public class Gamestate {
             players.get(i).setTerritories(distributedTerritories.get(i));
             players.get(i).askDistTroops(INITIAL_TROOPS);
         }
+        gameController.broadcastEvent(
+            players.stream()
+                .map(p -> p.emitter)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList()),
+            "gameStarted",
+            "The game has started!"
+        );
         currentPlayer = players.get(0);
         nextMove();
     }
 
     public void nextMove() {
-        String gameState = "lala";
+        sendGameStateUpdate();
         List<SseEmitter> emitters = players.stream()
             .map(p -> p.emitter)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
-        gameController.broadcastEvent(emitters, "NextMove:", gameState);
-        gameController.broadcastEvent(emitters, "CurrentPlayer:", currentPlayer.username);
+        gameController.broadcastEvent(emitters, "currentPlayer", currentPlayer.username);
     }
 
     public void endMove() {
@@ -88,7 +96,7 @@ public class Gamestate {
                         currentPlayer.distTroops(fromTerritory, -lostTroopsAttack);
                         List<SseEmitter> emitters = new ArrayList<>();
                         emitters.add(currentPlayer.emitter);
-                        gameController.broadcastEvent(emitters, "AskDistTroops:", toTerritory);
+                        gameController.broadcastEvent(emitters, "askDistTroops", toTerritory);
                     }
                     
                 }
@@ -99,7 +107,7 @@ public class Gamestate {
                 .map(pl -> pl.emitter)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList()),
-            "AttackResult:",
+            "attackResult",
             "Attack from " + fromTerritory + " to " + toTerritory + " completed."
         );
     }
@@ -123,5 +131,51 @@ public class Gamestate {
 
     public Player getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    private void sendGameStateUpdate() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        Territorries[] all = Territorries.values();
+        for (int i = 0; i < all.length; i++) {
+            Territorries t = all[i];
+            if (i > 0) sb.append(',');
+            String display = t.getDisplayName();
+            String owner = null;
+            int troops = 0;
+            for (Player p : players) {
+                Map<Territorries, Integer> map = p.getTerritories();
+                if (map != null && map.containsKey(t)) {
+                    owner = p.username;
+                    Integer val = map.get(t);
+                    troops = val == null ? 0 : val;
+                    break;
+                }
+            }
+            sb.append('{');
+            sb.append("\"territory\":\"").append(jsonEscape(display)).append('\"').append(',');
+            sb.append("\"owner\":");
+            if (owner == null) {
+                sb.append("null");
+            } else {
+                sb.append('"').append(jsonEscape(owner)).append('"');
+            }
+            sb.append(',');
+            sb.append("\"troops\":").append(troops);
+            sb.append('}');
+        }
+        sb.append("]");
+        String gameState = sb.toString();
+
+        List<SseEmitter> emitters = players.stream()
+            .map(p -> p.emitter)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+        gameController.broadcastEvent(emitters, "gameStateUpdate", gameState);
+    }
+
+    private static String jsonEscape(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
     }
 }
