@@ -1,6 +1,7 @@
 package com.risiko.contoller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,15 @@ public class RoomController {
         roomService.sendMessage(roomId, userId, message);
     }
 
+    @PostMapping("/start/{roomId}")
+    public ResponseEntity<?> startGame(@PathVariable("roomId") int roomId, HttpServletRequest request) {
+        try {
+            roomService.startGame(roomId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(501).body(e.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping
     public List<Room> listRooms() {
