@@ -2,9 +2,13 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - feature/*
+      - dev
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 env:
   REGISTRY: docker.io
@@ -108,7 +112,7 @@ jobs:
           context: ./Backend
           push: true
           tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:latest
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:${{ github.ref_name }}
             ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:${{ github.sha }}
 
   push-frontend:
@@ -138,7 +142,7 @@ jobs:
           context: ./Frontend/caesars-gambit
           push: true
           tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:latest
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:${{ github.ref_name }}
             ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:${{ github.sha }}
 
   deploy:
