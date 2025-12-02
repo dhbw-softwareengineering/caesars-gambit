@@ -93,7 +93,7 @@ public class Gamestate {
                     }
                     if (p.defend(toTerritory, lostTroopsDefence) == 0) {
                         currentPlayer.getTerritory(toTerritory);
-                        currentPlayer.distTroops(fromTerritory, -lostTroopsAttack);
+                        currentPlayer.distTroops(Territorries.getTerritorryByDisplayName(fromTerritory), -lostTroopsAttack);
                         List<SseEmitter> emitters = new ArrayList<>();
                         emitters.add(currentPlayer.emitter);
                         gameController.broadcastEvent(emitters, "askDistTroops", toTerritory);
@@ -133,7 +133,7 @@ public class Gamestate {
         return currentPlayer;
     }
 
-    private void sendGameStateUpdate() {
+    public void sendGameStateUpdate() {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
         Territorries[] all = Territorries.values();
@@ -177,5 +177,15 @@ public class Gamestate {
     private static String jsonEscape(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+    }
+
+
+    public Player getPlayerByUserId(long userId) {
+        for (Player p : players) {
+            if (p.getUserId() == userId) {
+                return p;
+            }
+        }
+        return null;
     }
 }
