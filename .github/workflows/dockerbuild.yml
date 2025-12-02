@@ -27,8 +27,10 @@ jobs:
           filters: |
             backend:
               - 'Backend/**'
+              - 'Backend/*'
             frontend:
               - 'Frontend/caesars-gambit/**'
+              - 'Frontend/caesars-gambit/*'
 
   build-backend:
     if: ${{ needs.check-changes.outputs.backend == 'true' }}
