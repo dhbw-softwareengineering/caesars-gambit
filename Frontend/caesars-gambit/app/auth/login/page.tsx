@@ -26,6 +26,10 @@ function LoginPageContent() {
     }
   }, [searchParams, router]);
 
+  useEffect(() => {
+    document.title = "Anmelden - Caesar's Gambit";
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,10 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    document.title = "Registrieren - Caesar's Gambit";
+  }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,8 +69,17 @@ export default function RegisterPage() {
             required
           />
           <div className="flex gap-2">
-            <Button type="submit" variant="primary" className="cursor-pointer">Registrieren</Button>
-            <Button type="button" className="cursor-pointer" variant="ghost" onClick={() => router.push("/auth/login")}><SquareArrowOutUpRight size={13} className="mr-2"/> Login</Button>
+            <Button type="submit" variant="primary" className="cursor-pointer">
+              Registrieren
+            </Button>
+            <Button
+              type="button"
+              className="cursor-pointer"
+              variant="ghost"
+              onClick={() => router.push("/auth/login")}
+            >
+              <SquareArrowOutUpRight size={13} className="mr-2" /> Login
+            </Button>
           </div>
         </form>
       </Item>
