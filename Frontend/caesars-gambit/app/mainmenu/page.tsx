@@ -56,7 +56,7 @@ export default function MainMenu() {
                         </div>
                     )}
 
-                    <Button variant="default">Einstellungen</Button>
+                    <Button variant="default" onClick={() => router.push("/settings")}>Einstellungen </Button>
                     <Button variant="default">Hilf bei der Entwicklung</Button>
                     <Button variant="destructive">Abmelden</Button>
                 </nav>
