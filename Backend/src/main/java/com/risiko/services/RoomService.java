@@ -61,4 +61,11 @@ public class RoomService {
     public void removeRoom(int id) {
         rooms.remove(id);
     }
+
+    public void sendMessage(int roomId, long userId, String message) {
+        Room room = rooms.get(roomId);
+        if (room != null) {
+            room.sendMessage(userId, message);
+        }
+    }
 }

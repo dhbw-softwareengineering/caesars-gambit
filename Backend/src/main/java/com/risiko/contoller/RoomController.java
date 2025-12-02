@@ -58,6 +58,14 @@ public class RoomController {
         }
     }
 
+    @PostMapping("/message/{roomId}")
+    public void sendMessage(@PathVariable("roomId") int roomId, HttpServletRequest request, @RequestBody Map<String, String> body) {
+        String token = request.getHeader("Authorization").substring(7);
+        long userId = authService.getUserIdFromToken(token);
+        String message = body.get("message");
+        roomService.sendMessage(roomId, userId, message);
+    }
+
 
     @GetMapping
     public List<Room> listRooms() {
