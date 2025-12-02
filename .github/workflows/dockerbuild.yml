@@ -11,13 +11,32 @@ env:
   DOCKERHUB_USERNAME: knoepsim
 
 jobs:
-  build-and-push:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Filter changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'Backend/**'
+            frontend:
+              - 'Frontend/caesars-gambit/**'
+
+  build-backend:
+    if: ${{ needs.check-changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Backend Build
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -29,7 +48,19 @@ jobs:
         working-directory: ./Backend
         run: mvn clean package -DskipTests
 
-      # Frontend Build
+      - name: Save backend Docker context
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-context
+          path: ./Backend
+
+  build-frontend:
+    if: ${{ needs.check-changes.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup Node.js and pnpm
         uses: actions/setup-node@v4
         with:
@@ -46,14 +77,27 @@ jobs:
         working-directory: ./Frontend/caesars-gambit
         run: pnpm build
 
-      # Docker login
+      - name: Save frontend Docker context
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-context
+          path: ./Frontend/caesars-gambit
+
+  push-backend:
+    needs: build-backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download backend Docker context
+        uses: actions/download-artifact@v3
+        with:
+          name: backend-context
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Build & Push Backend Image
       - name: Build and push backend Docker image
         uses: docker/build-push-action@v6
         with:
@@ -63,7 +107,21 @@ jobs:
             ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:latest
             ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:${{ github.sha }}
 
-      # Build & Push Frontend Image
+  push-frontend:
+    needs: build-frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download frontend Docker context
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-context
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Build and push frontend Docker image
         uses: docker/build-push-action@v6
         with:
