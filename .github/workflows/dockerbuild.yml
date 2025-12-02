@@ -131,9 +131,8 @@ jobs:
             ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:latest
             ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:${{ github.sha }}
 
-  # Optional: Deploy to Portainer
   deploy:
-    needs: push-backend, push-frontend
+    needs: [push-backend, push-frontend]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
