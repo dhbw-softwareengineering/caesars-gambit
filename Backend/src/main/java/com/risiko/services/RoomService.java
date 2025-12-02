@@ -68,4 +68,13 @@ public class RoomService {
             room.sendMessage(userId, message);
         }
     }
+
+    public void startGame(int roomId) {
+        Room room = rooms.get(roomId);
+        if (room != null) {
+            room.startGame();
+        } else {
+            throw new RuntimeException("Room not found");
+        }
+    }
 }
