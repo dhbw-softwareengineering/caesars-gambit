@@ -39,10 +39,10 @@ export default function RegisterPage() {
     <main className="flex min-h-screen items-center justify-center">
       <Item className="w-full max-w-md p-6">
         <form onSubmit={submit} className="flex flex-col gap-4 w-full">
-          <h2 className="text-2xl font-semibold">Register</h2>
+          <h2 className="text-2xl font-semibold">Registrieren</h2>
           {err && <div className="text-sm text-red-600">{err}</div>}
           <Input
-            label="Username"
+            label="Benutzername"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="Dein Benutzername"
@@ -57,7 +57,7 @@ export default function RegisterPage() {
             required
           />
           <Input
-            label="Password"
+            label="Passwort"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Dein Passwort"
@@ -65,7 +65,7 @@ export default function RegisterPage() {
             required
           />
           <div className="flex gap-2">
-            <Button type="submit" variant="primary" className="cursor-pointer">Register</Button>
+            <Button type="submit" variant="primary" className="cursor-pointer">Registrieren</Button>
             <Button type="button" className="cursor-pointer" variant="ghost" onClick={() => router.push("/auth/login")}><SquareArrowOutUpRight size={13} className="mr-2"/> Login</Button>
           </div>
         </form>

@@ -68,7 +68,7 @@ function LoginPageContent() {
             required
           />
           <Input
-            label="Password"
+            label="Passwort"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Dein Passwort"
@@ -83,7 +83,7 @@ function LoginPageContent() {
               variant="ghost"
               onClick={() => router.push("/auth/register")}
             >
-              <SquareArrowOutUpRight size={13} className="mr-2" /> Register
+              <SquareArrowOutUpRight size={13} className="mr-2" /> Registrieren
             </Button>
           </div>
         </form>
