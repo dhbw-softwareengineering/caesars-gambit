@@ -36,7 +36,7 @@ services:
     ports:
       - "3020:3000"
     environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_API_URL: https://api-caesars-gambit.knoep.de
     depends_on:
       - backend
 
