@@ -18,6 +18,5 @@ export async function createRoom() {
     }
 
     const data = await response.json();
-    console.log('Room created:', data);
     return data;
 }

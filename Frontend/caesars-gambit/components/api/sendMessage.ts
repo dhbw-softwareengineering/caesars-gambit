@@ -15,7 +15,7 @@ export async function sendMessage(id: number, message: string) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to join room');
+        throw new Error('Failed to send message');
     }
 
     return;
