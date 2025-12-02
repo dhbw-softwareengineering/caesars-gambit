@@ -71,7 +71,7 @@ function LoginPageContent() {
             label="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Your password"
+            placeholder="Dein Passwort"
             type="password"
             required
           />

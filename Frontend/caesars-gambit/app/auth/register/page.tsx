@@ -45,7 +45,7 @@ export default function RegisterPage() {
             label="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Your username"
+            placeholder="Dein Benutzername"
             required
           />
           <Input
@@ -60,7 +60,7 @@ export default function RegisterPage() {
             label="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Choose a password"
+            placeholder="Dein Passwort"
             type="password"
             required
           />
