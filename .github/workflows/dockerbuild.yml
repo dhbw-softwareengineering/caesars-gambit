@@ -52,7 +52,7 @@ jobs:
         run: mvn clean package -DskipTests
 
       - name: Save backend Docker context
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-context
           path: ./Backend
@@ -82,7 +82,7 @@ jobs:
         run: pnpm build
 
       - name: Save frontend Docker context
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-context
           path: ./Frontend/caesars-gambit
@@ -92,7 +92,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download backend Docker context
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: backend-context
 
@@ -116,7 +116,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download frontend Docker context
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: frontend-context
 

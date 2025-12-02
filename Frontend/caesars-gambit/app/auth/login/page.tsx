@@ -61,7 +61,7 @@ function LoginPageContent() {
           </div>
         )}
         <form onSubmit={submit} className="flex flex-col gap-4 w-full">
-          <h2 className="text-2xl font-semibold">Login2</h2>
+          <h2 className="text-2xl font-semibold">Login3</h2>
           {err && <div className="text-sm text-red-600">{err}</div>}
           <Input
             label="Email"
