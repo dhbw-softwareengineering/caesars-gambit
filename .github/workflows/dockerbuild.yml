@@ -84,5 +84,5 @@ jobs:
 
       - name: Deploy to Portainer via Webhook
         run: |
-          curl -X POST "${{ secrets.PORTAINER_URL }}/api/webhooks/YOUR_WEBHOOK_ID"
+          curl -X POST "${{ secrets.PORTAINER_URL }}/api/webhooks/2f5e3910-38b0-494c-9678-fe8cdb7547e6"
         continue-on-error: true
