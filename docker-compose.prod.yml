@@ -2,6 +2,8 @@ version: '3.8'
 services:
   db:
     image: postgres:15
+    labels:
+      com.centurylinklabs.watchtower.enable: "true" # Watchtower überwacht diesen Container
     environment:
       POSTGRES_DB: caesars_gambit
       POSTGRES_USER: postgres
@@ -11,6 +13,8 @@ services:
 
   backend:
     image: knoepsim/caesars-gambit-backend:latest
+    labels:
+      com.centurylinklabs.watchtower.enable: "true" # Watchtower überwacht diesen Container
     ports:
       - "3021:8080"
     environment:
@@ -27,6 +31,8 @@ services:
 
   frontend:
     image: knoepsim/caesars-gambit-frontend:latest
+    labels:
+      com.centurylinklabs.watchtower.enable: "true" # Watchtower überwacht diesen Container
     ports:
       - "3020:3000"
     environment:
@@ -39,9 +45,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      WATCHTOWER_CLEANUP: "true" # Removes old images
-      WATCHTOWER_POLL_INTERVAL: "300" # Checks for updates every 5 minutes
-      WATCHTOWER_INCLUDE_STOPPED: "true" # Updates stopped containers as well
+      WATCHTOWER_CLEANUP: "true" # Entfernt alte Images
+      WATCHTOWER_POLL_INTERVAL: "300" # Überprüft alle 5 Minuten auf Updates
+      WATCHTOWER_INCLUDE_STOPPED: "true" # Aktualisiert auch gestoppte Container
+      WATCHTOWER_LABEL_ENABLE: "true" # Überwacht nur Container mit Labels
     restart: always
 
 volumes:
