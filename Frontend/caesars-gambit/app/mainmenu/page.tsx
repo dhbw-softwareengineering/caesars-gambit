@@ -11,6 +11,9 @@ export default function MainMenu() {
     const router = useRouter();
     const [showJoinInput, setShowJoinInput] = useState(false);
     const [roomId, setRoomId] = useState("");
+    
+    const PAYPAL_LINK = "https://paypal.me/YourHandle?locale.x=de_DE";
+
 
     async function signOutAndRedirect() {
         await signOut();
@@ -63,11 +66,15 @@ export default function MainMenu() {
                         </div>
                     )}
 
-                    <Button variant="default">Einstellungen</Button>
-                    <Button variant="default">Hilf bei der Entwicklung</Button>
-                    <Button variant="destructive" onClick={() => signOutAndRedirect()}>Abmelden</Button>
-
-
+                    <Button variant="default" onClick={() => router.push("/settings")}>Einstellungen </Button>
+                    <Button
+                        variant="default"
+                        onClick={() => window.open(PAYPAL_LINK, "_blank", "noopener,noreferrer")}
+                        aria-label="Spenden über PayPal öffnen"
+                    >
+                        Hilf bei der Entwicklung
+                    </Button>
+                    <Button variant="destructive">Abmelden</Button>
                 </nav>
 
                 <footer className={styles.footer}>
