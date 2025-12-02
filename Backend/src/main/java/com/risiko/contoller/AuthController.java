@@ -10,6 +10,7 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -50,6 +51,6 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setMaxAge(0);
         response.addCookie(cookie);
-        return ResponseEntity.ok(Map.of("message", "Signed out"));
+        return ResponseEntity.ok(Map.of("message", "Signed out!"));
     }
 }
