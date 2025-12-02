@@ -4,7 +4,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "default" | "primary" | "secondary" | "destructive" 
+  variant?: "default" | "primary" | "secondary" | "destructive" | "ghost",
   size?: "sm" | "default" | "lg"
 }
 
@@ -13,11 +13,12 @@ const base =
 
 const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
   default:
-    "bg-blue-500/4 border border-blue-500/20 text-[rgba(225,240,255,0.95)] hover:bg-blue-500/8",
+    "bg-blue-500 border border-blue-500/20 text-[rgba(225,255,255)] hover:bg-blue-600",
   primary: "bg-[#3B82F6] text-white font-bold hover:bg-[#2563EB]",
   secondary: "bg-[#1E40AF] text-white font-bold hover:bg-[#1E3A8A]",
   destructive:
     "bg-[#B94A5A] text-white font-bold hover:bg-[#A03D50] focus-visible:ring-[#B94A5A]/40",
+  ghost: "bg-transparent text-black border border-black hover:bg-gray-100 border border-black/10",
 }
 
 const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {

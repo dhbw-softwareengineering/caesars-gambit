@@ -66,7 +66,7 @@ export default function RegisterPage() {
           />
           <div className="flex gap-2">
             <Button type="submit" variant="primary" className="cursor-pointer">Register</Button>
-            <Button type="button" className="cursor-pointer" variant="secondary" onClick={() => router.push("/auth/login")}><SquareArrowOutUpRight size={13} className="mr-2"/> Login</Button>
+            <Button type="button" className="cursor-pointer" variant="ghost" onClick={() => router.push("/auth/login")}><SquareArrowOutUpRight size={13} className="mr-2"/> Login</Button>
           </div>
         </form>
       </Item>
