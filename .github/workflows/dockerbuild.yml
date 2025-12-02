@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: docker.io
-  DOCKERHUB_USERNAME: matthiasbit
+  DOCKERHUB_USERNAME: knoepsim
 
 jobs:
   build-and-push:
