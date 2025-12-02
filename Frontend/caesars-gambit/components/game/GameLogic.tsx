@@ -6,6 +6,7 @@ export interface GameLogicProps {
     roomId: string
 
     token?: string
+    gameStateJson?: string | null
 
     children: (renderProps: GameLogicRenderProps) => React.ReactNode
 }
@@ -29,11 +30,14 @@ export interface GameLogicRenderProps {
     confirmAttack: () => Promise<void>
     confirmMove: () => Promise<void>
     confirmPlacement: () => Promise<void>
+
+    gameStateJson: string | null
 }
 
 export const GameLogic: React.FC<GameLogicProps> = ({
     roomId,
     token,
+    gameStateJson: propsGameStateJson,
     children,
 }) => {
     const [mode, setMode] = useState<GameMode>('view')
@@ -284,6 +288,7 @@ export const GameLogic: React.FC<GameLogicProps> = ({
                 confirmAttack,
                 confirmMove,
                 confirmPlacement,
+                gameStateJson: propsGameStateJson || null,
             })}
         </>
     )

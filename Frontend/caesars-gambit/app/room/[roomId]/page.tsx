@@ -10,6 +10,7 @@ export default function RoomPage() {
   const [playerNames, setPlayerNames] = useState<string[]>([]);
   const [chatMessages, setChatMessages] = useState<{username: string; message:string}[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
+  const [gameStateJson, setGameStateJson] = useState<string | null>(null);
   const router = useRouter();
 
   function playerListUpdated(e: MessageEvent) {
@@ -29,6 +30,8 @@ export default function RoomPage() {
     eventSource.addEventListener("init", (e: MessageEvent) => playerListUpdated(e));
     eventSource.addEventListener("playerJoined", (e: MessageEvent) => playerListUpdated(e));
     eventSource.addEventListener("playerLeft", (e: MessageEvent) => playerListUpdated(e));
+    eventSource.addEventListener("gameStarted", () => setGameStarted(true));
+    eventSource.addEventListener("gameStateUpdate", (e: MessageEvent) => setGameStateJson(e.data));
 
     eventSource.addEventListener("chatMessage", (e: MessageEvent) => {
       const data: { username: string; message: string } = JSON.parse(e.data);
@@ -50,7 +53,7 @@ export default function RoomPage() {
   return (
     <>
       {gameStarted ? 
-        <GamePage roomId={roomId!} /> 
+        <GamePage roomId={roomId!} gameStateJson={gameStateJson} /> 
         :
         <Lobby roomId={roomId!} playerNames={playerNames} chatMessages={chatMessages} onGameStart={() => handleGameStarted()} router={router} />
       }    

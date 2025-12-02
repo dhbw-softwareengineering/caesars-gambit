@@ -1,15 +1,17 @@
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
 import styles from './GameCard.module.css'
+import { TerritoryLabels } from './TerritoryLabels'
 
 const KARTE_SVG_PATH = '/assets/Karte-neutral.svg'
 const KARTE_FABIG_PATH = '/assets/Karte-fabig.jpg'
 
 export interface GameCardProps {
     onRegionClick?: (regionId: string) => void
+    gameStateJson?: string | null
 }
 
-export default function GameCard({ onRegionClick }: GameCardProps) {
+export default function GameCard({ onRegionClick, gameStateJson }: GameCardProps) {
     // direkter DOM-Zugang, um später innerHTML = svgText zu setzen
     const svgContainerRef = useRef<HTMLDivElement | null>(null)
 
@@ -29,12 +31,17 @@ export default function GameCard({ onRegionClick }: GameCardProps) {
                 svg.setAttribute('width', '100%')
                 svg.setAttribute('height', '100%')
                 svg.style.display = 'block'
+                // make the base SVG invisible but keep it interactive
+                svg.style.opacity = '0'
+                svg.style.pointerEvents = 'auto'
 
                 const regions =
                     svg.querySelectorAll<SVGGraphicsElement>('path[id]')
 
                 regions.forEach((region) => {
                     region.style.cursor = 'pointer'
+                    // ensure each region receives pointer events even when parent svg is invisible
+                    region.style.pointerEvents = 'auto'
 
                     const clickHandler = () => {
                         onRegionClick?.(region.id)
@@ -73,6 +80,7 @@ export default function GameCard({ onRegionClick }: GameCardProps) {
                 />
 
                 <div ref={svgContainerRef} className={styles.mapSvgContainer} />
+                <TerritoryLabels gameStateJson={gameStateJson || null} />
             </div>
         </>
     )

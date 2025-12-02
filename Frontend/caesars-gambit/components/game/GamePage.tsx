@@ -6,11 +6,12 @@ import { Separator } from '@/components/ui/separator'
 
 interface GamePageProps {
     roomId: string
+    gameStateJson: string | null 
 }
 
-export default function GamePage({ roomId }: GamePageProps) {
+export default function GamePage({ roomId, gameStateJson}: GamePageProps) {
     return (
-        <GameLogic roomId={roomId}>
+        <GameLogic roomId={roomId} gameStateJson={gameStateJson}>
             {({
                 mode,
                 setMode,
@@ -24,6 +25,7 @@ export default function GamePage({ roomId }: GamePageProps) {
                 confirmAttack,
                 confirmMove,
                 confirmPlacement,
+                gameStateJson: renderGameStateJson,
             }) => (
                 <div className={mainmenuStyles.container}>
                     <div
@@ -42,7 +44,7 @@ export default function GamePage({ roomId }: GamePageProps) {
                             </header>
 
                             <div className="relative rounded-xl border border-[rgba(59,130,246,0.25)] bg-black/30 overflow-hidden shadow-md">
-                                <GameCard onRegionClick={handleRegionClick} />
+                                <GameCard onRegionClick={handleRegionClick} gameStateJson={renderGameStateJson} />
                             </div>
                         </section>
 
