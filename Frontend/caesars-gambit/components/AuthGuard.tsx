@@ -12,7 +12,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
     const isPublic = publicPaths.some(p => pathname?.startsWith(p));
     if (!isPublic && !token) {
-      router.push('auth/login');
+      router.push('auth/login?m=Du+bist+nicht+angemeldet.+Bitte+logge+dich+ein+oder+registriere+dich+zuerst.');
     }
   }, [pathname, router]);
 

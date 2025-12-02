@@ -1,15 +1,22 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./mainmenu.module.css"
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 import { joinRoom } from "@/components/api/joinRoom";
 import { createRoom } from "@/components/api/createRoom";
 import Button from "@/components/ui/button";
+import signOut from "@/lib/auth";
 
 export default function MainMenu() {
     const router = useRouter();
     const [showJoinInput, setShowJoinInput] = useState(false);
     const [roomId, setRoomId] = useState("");
+
+    async function signOutAndRedirect() {
+        await signOut();
+        router.push("/auth/login?m=Du+hast+dich+abgemeldet.+Du+musst+dich+nun+wieder+anmelden.");
+    }
+
 
     return (
         <main className={styles.container}>
@@ -58,7 +65,9 @@ export default function MainMenu() {
 
                     <Button variant="default">Einstellungen</Button>
                     <Button variant="default">Hilf bei der Entwicklung</Button>
-                    <Button variant="destructive">Abmelden</Button>
+                    <Button variant="destructive" onClick={() => signOutAndRedirect()}>Abmelden</Button>
+
+
                 </nav>
 
                 <footer className={styles.footer}>
