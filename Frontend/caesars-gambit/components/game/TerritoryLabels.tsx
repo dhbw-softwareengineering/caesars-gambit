@@ -158,7 +158,16 @@ export const TerritoryLabels: React.FC<TerritoryLabelsProps> = ({
                 // events pass through to the (invisible) base SVG beneath.
                 return (
                     <g key={territory.territory}>
-                        {/* background circle for readability behind texts (does not capture pointer events) */}
+                        <circle
+                            cx={pos.x}
+                            cy={pos.y}
+                            r={40}
+                            fill="transparent"
+                            pointerEvents="auto"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => onTerritoryButtonClick?.(territory.territory)}
+                            aria-label={`Territory ${territory.territory}`}
+                        />
                         <circle
                             cx={pos.x}
                             cy={pos.y}
@@ -166,8 +175,6 @@ export const TerritoryLabels: React.FC<TerritoryLabelsProps> = ({
                             fill="rgba(0,0,0,0.45)"
                             pointerEvents="none"
                         />
-
-                        {/* clickable button: colored according to owner */}
                         <g
                             transform={`translate(${pos.x}, ${pos.y})`}
                             style={{ pointerEvents: 'auto', cursor: 'pointer' }}

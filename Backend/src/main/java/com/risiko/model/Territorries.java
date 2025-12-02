@@ -75,4 +75,13 @@ public enum Territorries {
     public String getDisplayName() {
         return displayName;
     }
+
+    public static Territorries getTerritorryByDisplayName(String displayName) {
+        for (Territorries t : Territorries.values()) {
+            if (t.getDisplayName().equals(displayName)) {
+                return t;
+            }
+        }
+        return null;
+    }
 }

@@ -6,10 +6,12 @@ import { Separator } from '@/components/ui/separator'
 
 interface GamePageProps {
     roomId: string
-    gameStateJson: string | null 
+    gameStateJson: string | null
+    pendingDistCount?: number | null
+    onDistSubmit?: (territoryId: string) => Promise<void> | void
 }
 
-export default function GamePage({ roomId, gameStateJson}: GamePageProps) {
+export default function GamePage({ roomId, gameStateJson, pendingDistCount = null, onDistSubmit }: GamePageProps) {
     return (
         <GameLogic roomId={roomId} gameStateJson={gameStateJson}>
             {({
@@ -44,7 +46,7 @@ export default function GamePage({ roomId, gameStateJson}: GamePageProps) {
                             </header>
 
                             <div className="relative rounded-xl border border-[rgba(59,130,246,0.25)] bg-black/30 overflow-hidden shadow-md">
-                                <GameCard onRegionClick={handleRegionClick} gameStateJson={renderGameStateJson} />
+                                <GameCard onRegionClick={handleRegionClick} gameStateJson={renderGameStateJson} onTerritoryButtonClick={(id) => { if (pendingDistCount && onDistSubmit) { void onDistSubmit(id); } else { handleRegionClick(id); } }} />
                             </div>
                         </section>
 

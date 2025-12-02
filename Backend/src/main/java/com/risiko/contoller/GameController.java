@@ -6,6 +6,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.risiko.model.Player;
 import com.risiko.model.Room;
+import com.risiko.model.Territorries;
 import com.risiko.services.AuthService;
 import com.risiko.services.RoomService;
 
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/game")
@@ -77,9 +79,14 @@ public class GameController {
     }
 
     @PostMapping("/distTroops")
-    public void distTroops(@RequestParam String to, @RequestParam int sum, @RequestParam String roomId) {
-        Room room = roomService.getRoomById(Integer.parseInt(roomId));
-        room.getGamestate().getCurrentPlayer().distTroops(to, sum);// Noch schauen ob currentPlayer hier richtig ist
+    public void distTroops(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
+        Room room = roomService.getRoomById(Integer.parseInt((String) request.get("roomId")));
+        String token = httpRequest.getHeader("Authorization").substring(7);
+        long userId = authService.getUserIdFromToken(token);
+        String to = (String) request.get("to");
+        int sum = ((Number) request.get("sum")).intValue();
+        room.getGamestate().getPlayerByUserId(userId).distTroops(Territorries.getTerritorryByDisplayName(to), sum);
+        room.getGamestate().sendGameStateUpdate();
     }
 
     public void broadcastEvent(List<SseEmitter> emitters, String eventName, String data) {

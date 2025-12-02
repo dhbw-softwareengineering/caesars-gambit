@@ -9,9 +9,10 @@ const KARTE_FABIG_PATH = '/assets/Karte-fabig.jpg'
 export interface GameCardProps {
     onRegionClick?: (regionId: string) => void
     gameStateJson?: string | null
+    onTerritoryButtonClick?: (regionId: string) => void
 }
 
-export default function GameCard({ onRegionClick, gameStateJson }: GameCardProps) {
+export default function GameCard({ onRegionClick, gameStateJson, onTerritoryButtonClick }: GameCardProps) {
     // direkter DOM-Zugang, um später innerHTML = svgText zu setzen
     const svgContainerRef = useRef<HTMLDivElement | null>(null)
 
@@ -80,7 +81,7 @@ export default function GameCard({ onRegionClick, gameStateJson }: GameCardProps
                 />
 
                 <div ref={svgContainerRef} className={styles.mapSvgContainer} />
-                <TerritoryLabels gameStateJson={gameStateJson || null} />
+                <TerritoryLabels gameStateJson={gameStateJson || null} onTerritoryButtonClick={onTerritoryButtonClick} />
             </div>
         </>
     )

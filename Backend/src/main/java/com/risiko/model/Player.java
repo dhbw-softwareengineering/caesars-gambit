@@ -35,8 +35,8 @@ public class Player {
         return territories == null ? Collections.emptyMap() : Collections.unmodifiableMap(territories);
     }
 
-    public void distTroops(String territory, int sum) {
-        territories.put(Territorries.valueOf(territory), territories.get(Territorries.valueOf(territory)) + sum);
+    public void distTroops(Territorries territory, int sum) {
+        territories.put(territory, territories.get(territory) + sum);
     }
 
     public void moveTroops(String from, String to, int sum) {
@@ -62,7 +62,7 @@ public class Player {
 
     public void askDistTroops(int sum) {
         try {
-            emitter.send(SseEmitter.event().name("AskDistTroops").data(sum));
+            emitter.send(SseEmitter.event().name("askDistTroops").data(sum - territories.size()));
         } catch (IOException e) {
             emitter.completeWithError(e);
         }
