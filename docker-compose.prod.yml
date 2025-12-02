@@ -34,5 +34,15 @@ services:
     depends_on:
       - backend
 
+  watchtower:
+    image: containrrr/watchtower:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_CLEANUP: "true" # Removes old images
+      WATCHTOWER_POLL_INTERVAL: "300" # Checks for updates every 5 minutes
+      WATCHTOWER_INCLUDE_STOPPED: "true" # Updates stopped containers as well
+    restart: always
+
 volumes:
   db-data:
