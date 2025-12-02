@@ -133,7 +133,7 @@ jobs:
 
   # Optional: Deploy to Portainer
   deploy:
-    needs: build-and-push
+    needs: push-backend, push-frontend
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
