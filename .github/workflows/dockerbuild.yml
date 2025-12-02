@@ -33,6 +33,7 @@ jobs:
               - 'Frontend/caesars-gambit/*'
 
   build-backend:
+    needs: check-changes
     if: ${{ needs.check-changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -57,6 +58,7 @@ jobs:
           path: ./Backend
 
   build-frontend:
+    needs: check-changes
     if: ${{ needs.check-changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
