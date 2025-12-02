@@ -1,0 +1,88 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: docker.io
+  DOCKERHUB_USERNAME: matthiasbit
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Backend Build
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build backend with Maven
+        working-directory: ./Backend
+        run: mvn clean package -DskipTests
+
+      # Frontend Build
+      - name: Setup Node.js and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install frontend dependencies
+        working-directory: ./Frontend/caesars-gambit
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        working-directory: ./Frontend/caesars-gambit
+        run: pnpm build
+
+      # Docker login
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Build & Push Backend Image
+      - name: Build and push backend Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Backend
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:latest
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:${{ github.sha }}
+
+      # Build & Push Frontend Image
+      - name: Build and push frontend Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Frontend/caesars-gambit
+          push: true
+          tags: |
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:latest
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:${{ github.sha }}
+
+  # Optional: Deploy to Portainer
+  deploy:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Portainer via Webhook
+        run: |
+          curl -X POST "${{ secrets.PORTAINER_URL }}/api/webhooks/YOUR_WEBHOOK_ID"
+        continue-on-error: true
