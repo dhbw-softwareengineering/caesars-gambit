@@ -118,8 +118,8 @@ jobs:
           context: ./Backend
           push: true
           tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:${{ github.ref_name }}
-            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:${{ github.sha }}
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:latest # Release-Tag
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:${{ github.sha }} # Commit-Tag
 
   push-frontend:
     needs: build-frontend
@@ -148,8 +148,8 @@ jobs:
           context: ./Frontend/caesars-gambit
           push: true
           tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:${{ github.ref_name }}
-            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:${{ github.sha }}
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:latest # Release-Tag
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:${{ github.sha }} # Commit-Tag
 
   deploy:
     needs: [push-backend, push-frontend]
