@@ -113,8 +113,8 @@ jobs:
           context: ./Backend
           push: true
           tags: |
-            ghcr.io/matthiasbit/caesars-gambit-backend:${{ github.sha }} # Commit-Tag
-            ${{ github.ref == 'refs/heads/main' && 'ghcr.io/matthiasbit/caesars-gambit-backend:latest' }} # Release-Tag nur für main
+            ghcr.io/matthiasbit/caesars-gambit-backend:${{ github.sha }}
+            ${{ github.ref == 'refs/heads/main' && 'ghcr.io/matthiasbit/caesars-gambit-backend:latest' }}
 
   push-frontend:
     needs: build-frontend
@@ -140,8 +140,8 @@ jobs:
           context: ./Frontend/caesars-gambit
           push: true
           tags: |
-            ghcr.io/matthiasbit/caesars-gambit-frontend:${{ github.sha }} # Commit-Tag
-            ${{ github.ref == 'refs/heads/main' && 'ghcr.io/matthiasbit/caesars-gambit-frontend:latest' }} # Release-Tag nur für main
+            ghcr.io/matthiasbit/caesars-gambit-frontend:${{ github.sha }}
+            ${{ github.ref == 'refs/heads/main' && 'ghcr.io/matthiasbit/caesars-gambit-frontend:latest' }}
   deploy:
     needs: [push-backend, push-frontend]
     if: github.ref == 'refs/heads/main' && (success() || always())
