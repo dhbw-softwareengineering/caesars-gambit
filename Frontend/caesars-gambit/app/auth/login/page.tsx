@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Item } from "@/components/ui/item";
 import { SquareArrowOutUpRight } from "lucide-react";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+console.log(apiUrl); // Sollte die gesetzte URL ausgeben
+
 function LoginPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +38,7 @@ function LoginPageContent() {
     setErr(null);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/login`,
+        `${apiUrl}/api/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

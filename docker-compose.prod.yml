@@ -12,7 +12,7 @@ services:
       - db-data:/var/lib/postgresql/data
 
   backend:
-    image: knoepsim/caesars-gambit-backend:latest
+    image: ghcr.io/Matthiasbit/caesars-gambit-backend:latest # Image aus GHCR
     labels:
       com.centurylinklabs.watchtower.enable: "true" # Watchtower überwacht diesen Container
     ports:
@@ -30,7 +30,7 @@ services:
       - db
 
   frontend:
-    image: knoepsim/caesars-gambit-frontend:latest
+    image: ghcr.io/Matthiasbit/caesars-gambit-frontend:latest # Image aus GHCR
     labels:
       com.centurylinklabs.watchtower.enable: "true" # Watchtower überwacht diesen Container
     ports:

@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Item } from "@/components/ui/item";
 import { SquareArrowOutUpRight } from "lucide-react";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+console.log(apiUrl); // Sollte die gesetzte URL ausgeben
+
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -23,7 +26,7 @@ export default function RegisterPage() {
     setErr(null);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+        `${apiUrl}/api/auth/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
