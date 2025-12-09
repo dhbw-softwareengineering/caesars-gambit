@@ -1,6 +1,6 @@
 # Caesar's Gambit
 
-## Statistik Aufwändungen 
+## Statistik Aufwendungen 
 
 | Hauptbeitrag              | Stunden    | Person   |
 |---------------------------|------------|----------|
@@ -44,13 +44,11 @@ der Mitglieder im Raum, sowie der Spieler der Beigetreten ist direkt die Spieler
 
 Für den Chat ist es wichtig, das die Nachrichten mit dem Absender weitergegeben werden. Auf diese Weise kann bei jedem Spieler die selbst geschreibenen Nachrichten Rechts und die von anderen Raummitglieder links 
 inklusive Namen und Logo angezeigt. 
-
-Wird das Spiel gestartet beginnt die Iniziierung des Spiels. Hierbei werden jdem Spieler zufällige Gebiete der Karte zugeweisen. Daraufhin bekommt jeder Spieler die Möglichkeit seine initialen Truppen auf die eigenen Gebiete aufzuteilen. Hierfür gibt es für SSE verschiedene Events wie Gamestart,ask DistTroops wie viele Truppen der Spieler noch zu verteilen hat. Sobalt jdeder die Initialen Truppen verteilt ist das Initialisieren beendet und im Folgenden würde die erste Runde Beginnen. 
  
-
+Wird das Spiel gestartet, beginnt die Initialisierung. Dabei werden jedem Spieler zufällige Gebiete der Karte zugewiesen. Anschließend erhält jeder Spieler die Möglichkeit, seine initialen Truppen auf die eigenen Gebiete zu verteilen. Für diesen Prozess existieren verschiedene SSE-Events, über die der Server die Clients über den Fortschritt informiert. Sobald alle Spieler ihre initialen Truppen verteilt haben, ist die Initialisierungsphase abgeschlossen und die erste Runde kann beginnen
 
 ## Architekturstiele/-entscheidungen
-Unsere Architektur kombiniert ein Next.js/React-Frontend mit einem Spring-Boot-Backend, einer klaren Schichtenstruktur und einer PostgreSQL-Datenbank, um eine performante und gut wartbare Spielplattform bereitzustellen. Das Frontend übernimmt UI und Spiellogik in klaren Komponenten und nutzt TypeScript, um Fehler frühzeitig durch statische Typprüfung zu erkennen. Im Backend validiert Spring Boot alle Spielzüge in einer Controller‑Service‑Repository‑Schichtenarchitektur, sodass Regeln zentral durchgesetzt werden und Manipulationen auf Client-Seite verhindert werden. Über Server-Sent Events werden Zustandsänderungen effizient vom Server an alle Clients gepusht, wodurch alle Spieler synchron bleiben, ohne dass die Clients ständig pollen müssen. Persistente Userdaten werden in PostgreSQL verwaltet, während ein SVG-Overlay im Frontend präzise klickbare Regionen ermöglicht, was die UI flexibel erweiterbar macht und die Einführung neuer Einheiten oder Regeln deutlich vereinfacht.
+Unsere Architektur kombiniert ein Next.js/React-Frontend mit einem Spring-Boot-Backend, einer klaren Schichtenstruktur und einer PostgreSQL-Datenbank, um eine performante und gut wartbare Spielplattform bereitzustellen. Das Frontend übernimmt UI und Spiellogik in klaren Komponenten und nutzt TypeScript, um Fehler frühzeitig durch statische Typprüfung zu erkennen. Im Backend validiert Spring Boot alle Spielzüge in einer Controller‑Service‑Repository‑Schichtenarchitektur, sodass Regeln zentral durchgesetzt werden und Manipulationen auf Client-Seite verhindert werden. Über Server-Sent Events werden Zustandsänderungen effizient vom Server an alle Clients gepusht, sodass alle Spieler synchron bleiben, ohne dass die Clients ständig pollen müssen. Persistente Userdaten werden in PostgreSQL verwaltet, während ein SVG-Overlay im Frontend präzise klickbare Regionen ermöglicht, was die UI flexibel erweiterbar macht und die Einführung neuer Einheiten oder Regeln deutlich vereinfacht.
 
 
 ## Software Tools/Plattforms
