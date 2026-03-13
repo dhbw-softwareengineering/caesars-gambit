@@ -2,6 +2,8 @@ version: '3.8'
 services:
   db:
     image: postgres:15
+    labels:
+      com.centurylinklabs.watchtower.enable: "true" # Watchtower überwacht diesen Container
     environment:
       POSTGRES_DB: caesars_gambit
       POSTGRES_USER: postgres
@@ -10,9 +12,11 @@ services:
       - db-data:/var/lib/postgresql/data
 
   backend:
-    image: knoepsim/caesars-gambit-backend:latest
+    image: ghcr.io/Matthiasbit/caesars-gambit-backend:latest # Image aus GHCR
+    labels:
+      com.centurylinklabs.watchtower.enable: "true" # Watchtower überwacht diesen Container
     ports:
-      - "8080:8080"
+      - "3021:8080"
     environment:
       DB_HOST: db
       DB_PORT: 5432
@@ -21,18 +25,31 @@ services:
       DB_PASSWORD: postgres
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: 3600000
-      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      CORS_ALLOWED_ORIGINS: https://caesars-gambit.knoep.de
     depends_on:
       - db
 
   frontend:
-    image: knoepsim/caesars-gambit-frontend:latest
+    image: ghcr.io/Matthiasbit/caesars-gambit-frontend:latest # Image aus GHCR
+    labels:
+      com.centurylinklabs.watchtower.enable: "true" # Watchtower überwacht diesen Container
     ports:
-      - "3000:3000"
+      - "3020:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8080
+      NEXT_PUBLIC_API_URL: https://api-caesars-gambit.knoep.de
     depends_on:
       - backend
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_CLEANUP: "true" # Entfernt alte Images
+      WATCHTOWER_POLL_INTERVAL: "300" # Überprüft alle 5 Minuten auf Updates
+      WATCHTOWER_INCLUDE_STOPPED: "true" # Aktualisiert auch gestoppte Container
+      WATCHTOWER_LABEL_ENABLE: "true" # Überwacht nur Container mit Labels
+    restart: always
 
 volumes:
   db-data:

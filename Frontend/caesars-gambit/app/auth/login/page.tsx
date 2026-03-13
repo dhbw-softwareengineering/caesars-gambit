@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Item } from "@/components/ui/item";
 import { SquareArrowOutUpRight } from "lucide-react";
 
-export default function LoginPage() {
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+console.log(apiUrl); // Sollte die gesetzte URL ausgeben
+
+function LoginPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -26,12 +29,16 @@ export default function LoginPage() {
     }
   }, [searchParams, router]);
 
+  useEffect(() => {
+    document.title = "Anmelden - Caesar's Gambit";
+  }, []);
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/login`,
+        `${apiUrl}/api/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -68,10 +75,10 @@ export default function LoginPage() {
             required
           />
           <Input
-            label="Password"
+            label="Passwort"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Your password"
+            placeholder="Dein Passwort"
             type="password"
             required
           />
@@ -83,11 +90,19 @@ export default function LoginPage() {
               variant="ghost"
               onClick={() => router.push("/auth/register")}
             >
-              <SquareArrowOutUpRight size={13} className="mr-2" /> Register
+              <SquareArrowOutUpRight size={13} className="mr-2" /> Registrieren
             </Button>
           </div>
         </form>
       </Item>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
