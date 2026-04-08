@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "./mainmenu.module.css"
 import { useRouter } from "next/navigation";
 import { joinRoom } from "@/components/api/joinRoom";
@@ -25,7 +25,7 @@ export default function MainMenu() {
         <main className={styles.container}>
             <div className={styles.card}>
                 <header className={styles.header}>
-                    <h1 className={styles.title}>Caesar's Gambit</h1>
+                    <h1 className={styles.title}>Caesar&apos;s Gambit</h1>
                     <p className={styles.paragraph}>
                         Wähle eine Option, um zu beginnen.
                     </p>
@@ -74,12 +74,12 @@ export default function MainMenu() {
                     >
                         Hilf bei der Entwicklung
                     </Button>
-                    <Button variant="destructive">Abmelden</Button>
+                    <Button variant="destructive" onClick={signOutAndRedirect}>Abmelden</Button>
                 </nav>
 
                 <footer className={styles.footer}>
                     <span>Version 1.0</span>
-                    <span>© Caesar's Gambit</span>
+                    <span>© Caesar&apos;s Gambit</span>
                 </footer>
             </div>
         </main>

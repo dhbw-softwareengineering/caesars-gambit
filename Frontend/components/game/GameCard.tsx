@@ -49,14 +49,12 @@ export default function GameCard({ onRegionClick, gameStateJson, onTerritoryButt
                     }
 
                     region.addEventListener('click', clickHandler)
-                    ;(region as any)._gcClickHandler = clickHandler
+                    ;(region as SVGGraphicsElement & { _gcClickHandler?: () => void })._gcClickHandler = clickHandler
                 })
 
                 return () => {
                     regions.forEach((region) => {
-                        const handler = (region as any)._gcClickHandler as
-                            | ((e: MouseEvent) => void)
-                            | undefined
+                        const handler = (region as SVGGraphicsElement & { _gcClickHandler?: () => void })._gcClickHandler
                         if (handler) {
                             region.removeEventListener('click', handler)
                         }

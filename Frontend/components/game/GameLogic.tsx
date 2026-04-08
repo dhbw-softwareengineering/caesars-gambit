@@ -52,6 +52,7 @@ export const GameLogic: React.FC<GameLogicProps> = ({
 
     const [troopCount, setTroopCount] = useState<number>(1)
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const buildHeaders = useCallback((): HeadersInit => {
         const headers: HeadersInit = {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -143,11 +144,12 @@ export const GameLogic: React.FC<GameLogicProps> = ({
             return
         }
 
-        const params = new URLSearchParams({
+        const _params = new URLSearchParams({
             from: selectedFromRegionId,
             to: selectedToRegionId,
             roomId: roomId,
         })
+        void _params
 
         console.log(
             '%c[FAKE-ATTACK]',
@@ -173,7 +175,7 @@ export const GameLogic: React.FC<GameLogicProps> = ({
         } catch (err) {
             console.error('Fehler beim Attack-Request:', err)
         } */
-    }, [mode, selectedFromRegionId, selectedToRegionId, roomId, buildHeaders])
+    }, [mode, selectedFromRegionId, selectedToRegionId, roomId])
 
     const confirmMove = useCallback(async () => {
         if (mode !== 'move') {
@@ -185,12 +187,13 @@ export const GameLogic: React.FC<GameLogicProps> = ({
             return
         }
 
-        const params = new URLSearchParams({
+        const _moveParams = new URLSearchParams({
             from: selectedFromRegionId,
             to: selectedToRegionId,
             sum: troopCount.toString(),
             roomId: roomId,
         })
+        void _moveParams
 
         console.log(
             '%c[FAKE-MOVE]',
@@ -224,7 +227,6 @@ export const GameLogic: React.FC<GameLogicProps> = ({
         selectedToRegionId,
         troopCount,
         roomId,
-        buildHeaders,
     ])
 
     const confirmPlacement = useCallback(async () => {
@@ -237,11 +239,12 @@ export const GameLogic: React.FC<GameLogicProps> = ({
             return
         }
 
-        const params = new URLSearchParams({
+        const _placementParams = new URLSearchParams({
             to: selectedToRegionId,
             sum: troopCount.toString(),
             roomId: roomId,
         })
+        void _placementParams
 
         console.log(
             '%c[FAKE-PLACEMENT]',
@@ -270,7 +273,7 @@ export const GameLogic: React.FC<GameLogicProps> = ({
         } catch (err) {
             console.error('Fehler beim distTroops-Request:', err)
         } */
-    }, [mode, selectedToRegionId, troopCount, roomId, buildHeaders])
+    }, [mode, selectedToRegionId, troopCount, roomId])
 
     return (
         <>

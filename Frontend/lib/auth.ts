@@ -9,14 +9,13 @@ export async function signOut(): Promise<void> {
       credentials: "include",
       headers: { "Content-Type": "application/json" },
     });
-  } catch (e) {
+  } catch {
     // ignore network errors - still remove client token
-    // console.warn('signout request failed', e)
   }
 
   try {
     if (typeof window !== "undefined") localStorage.removeItem("accessToken");
-  } catch (e) {
+  } catch {
     // ignore
   }
 }
