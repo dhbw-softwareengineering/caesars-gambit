@@ -57,7 +57,7 @@ jobs:
   # ── CD: Docker-Images bauen & nach GHCR pushen ────────────────────────────
   build-and-push:
     name: Build & Push to GHCR
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI/CD')
     needs: [test-backend, test-frontend]
     runs-on: ubuntu-latest
     permissions:
