@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { sendMessage } from "../api/sendMessage";
 import { useGetCurrentUser } from "../api/getCurrentUser";
-import Button from "./button";
 
 type ChatProps = {
   msg: { username: string; message: string }[];
@@ -90,7 +89,7 @@ if (user === null) {
 
       <div className="mt-3 flex gap-2">
         <input
-          className="flex-1 rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          className="flex-1 rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300"
           placeholder="Nachricht schreiben..."
           value={messageInput}
           onChange={(e) => setMessageInput(e.target.value)}
@@ -102,12 +101,14 @@ if (user === null) {
           }}
         />
 
-        <Button
-          variant="primary"
+        <button
+          className={`px-4 py-2 rounded-md font-semibold text-white ${
+            messageInput.trim() ? "bg-violet-600 hover:bg-violet-700" : "bg-violet-300 cursor-not-allowed"
+          }`}
           onClick={() => void handleSend()}
           disabled={!messageInput.trim() || !numericRoomId || Number.isNaN(numericRoomId)}>
           Senden
-        </Button>
+        </button>
       </div>
     </div>
   );

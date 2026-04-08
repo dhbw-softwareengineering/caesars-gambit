@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Item } from "@/components/ui/item";
 import { SquareArrowOutUpRight } from "lucide-react";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-console.log(apiUrl); // Sollte die gesetzte URL ausgeben
-
-function LoginPageContent() {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -29,16 +26,12 @@ function LoginPageContent() {
     }
   }, [searchParams, router]);
 
-  useEffect(() => {
-    document.title = "Anmelden - Caesar's Gambit";
-  }, []);
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
     try {
       const res = await fetch(
-        `${apiUrl}/api/auth/login`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -75,10 +68,10 @@ function LoginPageContent() {
             required
           />
           <Input
-            label="Passwort"
+            label="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Dein Passwort"
+            placeholder="Your password"
             type="password"
             required
           />
@@ -90,19 +83,11 @@ function LoginPageContent() {
               variant="ghost"
               onClick={() => router.push("/auth/register")}
             >
-              <SquareArrowOutUpRight size={13} className="mr-2" /> Registrieren
+              <SquareArrowOutUpRight size={13} className="mr-2" /> Register
             </Button>
           </div>
         </form>
       </Item>
     </main>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LoginPageContent />
-    </Suspense>
   );
 }

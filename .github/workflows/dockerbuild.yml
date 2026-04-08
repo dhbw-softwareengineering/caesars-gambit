@@ -2,46 +2,22 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches:
-      - main
-      - feature/*
-      - dev
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 env:
-  REGISTRY: ghcr.io
-  DOCKERHUB_USERNAME: ${{ github.actor }}
+  REGISTRY: docker.io
+  DOCKERHUB_USERNAME: matthiasbit
 
 jobs:
-  check-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Filter changes
-        id: filter
-        uses: dorny/paths-filter@v3
-        with:
-          filters: |
-            backend:
-              - 'Backend/**'
-            frontend:
-              - 'Frontend/caesars-gambit/**'
-
-  build-backend:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.backend == 'true' }}
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Backend Build
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -53,20 +29,7 @@ jobs:
         working-directory: ./Backend
         run: mvn clean package -DskipTests
 
-      - name: Save backend Docker context
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-context
-          path: ./Backend
-
-  build-frontend:
-    needs: check-changes
-    if: ${{ needs.check-changes.outputs.frontend == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
+      # Frontend Build
       - name: Setup Node.js and pnpm
         uses: actions/setup-node@v4
         with:
@@ -83,68 +46,37 @@ jobs:
         working-directory: ./Frontend/caesars-gambit
         run: pnpm build
 
-      - name: Save frontend Docker context
-        uses: actions/upload-artifact@v4
+      # Docker login
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          name: frontend-context
-          path: ./Frontend/caesars-gambit
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  push-backend:
-    needs: build-backend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Debug repository structure
-        run: ls -R
-
-      - name: Download backend Docker context
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-context
-
-      - name: Login to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
+      # Build & Push Backend Image
       - name: Build and push backend Docker image
         uses: docker/build-push-action@v6
         with:
           context: ./Backend
           push: true
           tags: |
-            ghcr.io/matthiasbit/caesars-gambit-backend:${{ github.sha }}
-            ${{ github.ref == 'refs/heads/main' && 'ghcr.io/matthiasbit/caesars-gambit-backend:latest' }}
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:latest
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-backend:${{ github.sha }}
 
-  push-frontend:
-    needs: build-frontend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Debug repository structure
-        run: ls -R Frontend
-
-      - name: Download frontend Docker context
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-context
-
-      - name: Login to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
+      # Build & Push Frontend Image
       - name: Build and push frontend Docker image
         uses: docker/build-push-action@v6
         with:
           context: ./Frontend/caesars-gambit
           push: true
           tags: |
-            ghcr.io/matthiasbit/caesars-gambit-frontend:${{ github.sha }}
-            ${{ github.ref == 'refs/heads/main' && 'ghcr.io/matthiasbit/caesars-gambit-frontend:latest' }}
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:latest
+            ${{ env.DOCKERHUB_USERNAME }}/caesars-gambit-frontend:${{ github.sha }}
+
+  # Optional: Deploy to Portainer
   deploy:
-    needs: [push-backend, push-frontend]
-    if: github.ref == 'refs/heads/main' && (success() || always())
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -152,5 +84,5 @@ jobs:
 
       - name: Deploy to Portainer via Webhook
         run: |
-          curl -X POST "${{ secrets.PORTAINER_URL }}/api/stacks/webhooks/2f5e3910-38b0-494c-9678-fe8cdb7547e6"
+          curl -X POST "${{ secrets.PORTAINER_URL }}/api/webhooks/YOUR_WEBHOOK_ID"
         continue-on-error: true

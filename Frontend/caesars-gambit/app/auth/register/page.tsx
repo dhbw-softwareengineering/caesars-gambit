@@ -1,14 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Item } from "@/components/ui/item";
 import { SquareArrowOutUpRight } from "lucide-react";
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-console.log(apiUrl); // Sollte die gesetzte URL ausgeben
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -17,16 +14,12 @@ export default function RegisterPage() {
   const [err, setErr] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    document.title = "Registrieren - Caesar's Gambit";
-  }, []);
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
     try {
       const res = await fetch(
-        `${apiUrl}/api/auth/register`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/register`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -46,13 +39,13 @@ export default function RegisterPage() {
     <main className="flex min-h-screen items-center justify-center">
       <Item className="w-full max-w-md p-6">
         <form onSubmit={submit} className="flex flex-col gap-4 w-full">
-          <h2 className="text-2xl font-semibold">Registrieren</h2>
+          <h2 className="text-2xl font-semibold">Register</h2>
           {err && <div className="text-sm text-red-600">{err}</div>}
           <Input
-            label="Benutzername"
+            label="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Dein Benutzername"
+            placeholder="Your username"
             required
           />
           <Input
@@ -64,25 +57,16 @@ export default function RegisterPage() {
             required
           />
           <Input
-            label="Passwort"
+            label="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Dein Passwort"
+            placeholder="Choose a password"
             type="password"
             required
           />
           <div className="flex gap-2">
-            <Button type="submit" variant="primary" className="cursor-pointer">
-              Registrieren
-            </Button>
-            <Button
-              type="button"
-              className="cursor-pointer"
-              variant="ghost"
-              onClick={() => router.push("/auth/login")}
-            >
-              <SquareArrowOutUpRight size={13} className="mr-2" /> Login
-            </Button>
+            <Button type="submit" variant="primary" className="cursor-pointer">Register</Button>
+            <Button type="button" className="cursor-pointer" variant="ghost" onClick={() => router.push("/auth/login")}><SquareArrowOutUpRight size={13} className="mr-2"/> Login</Button>
           </div>
         </form>
       </Item>
