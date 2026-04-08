@@ -10,7 +10,7 @@ services:
       - db-data:/var/lib/postgresql/data
 
   backend:
-    image: knoepsim/caesars-gambit-backend:latest
+    image: ghcr.io/dhbw-softwareengineering/caesars-gambit-backend:latest
     ports:
       - "8080:8080"
     environment:
@@ -26,7 +26,7 @@ services:
       - db
 
   frontend:
-    image: knoepsim/caesars-gambit-frontend:latest
+    image: ghcr.io/dhbw-softwareengineering/caesars-gambit-frontend:latest
     ports:
       - "3000:3000"
     environment:
