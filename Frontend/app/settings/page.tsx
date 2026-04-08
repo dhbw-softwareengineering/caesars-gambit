@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {useRouter} from "next/navigation";
@@ -13,6 +13,7 @@ export default function SettingsPage() {
 
     useEffect(() => {
         if (currentUser?.username) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setName(currentUser.username);
         }
     }, [currentUser]);
@@ -25,7 +26,7 @@ export default function SettingsPage() {
                 <section className="mb-4">
                     <label className="block text-sm font-medium mb-2">Anmelde- und Ingamename</label>
                     <div className="flex gap-2">
-                        <Input value={name} onChange={(e: any) => setName(e.target.value)} placeholder="Dein Name" aria-label="Spielername" />
+                        <Input value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} placeholder="Dein Name" aria-label="Spielername" />
                         <Button variant="primary" type="button">Speichern</Button>
                     </div>
                 </section>

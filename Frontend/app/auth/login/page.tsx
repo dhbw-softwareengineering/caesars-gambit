@@ -42,8 +42,8 @@ function LoginForm() {
       if (!res.ok) throw new Error(data.error || "Login failed");
       localStorage.setItem("accessToken", data.accessToken);
       router.push("/mainmenu");
-    } catch (e: any) {
-      setErr(e?.message || String(e));
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : String(e));
     }
   };
 
