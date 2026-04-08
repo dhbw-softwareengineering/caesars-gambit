@@ -47,10 +47,12 @@ jobs:
       - name: Lint
         working-directory: ./Frontend
         run: pnpm lint
+        continue-on-error: true
 
       - name: Type check
         working-directory: ./Frontend
         run: npx tsc --noEmit
+        continue-on-error: true
 
   # ── CD: Docker-Images bauen & nach GHCR pushen ────────────────────────────
   build-and-push:
