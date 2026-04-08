@@ -14,6 +14,7 @@ type LobbyProps = {
 };
 
 export function Lobby({roomId, playerNames, chatMessages, onGameStart, router}: LobbyProps) {
+  if(!chatMessages) alert("Kann net sein")
     const [copied, setCopied] = useState(false);
 
     const handleShare = async () => {

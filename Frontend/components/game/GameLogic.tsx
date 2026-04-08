@@ -1,6 +1,13 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
+import { useOwnerColorMap, getColorForOwner } from '@/lib/useOwnerColorMap'
 
 export type GameMode = 'view' | 'place' | 'attack' | 'move'
+
+interface TerritoryData {
+    territory: string
+    owner: string | null
+    troops: number
+}
 
 export interface GameLogicProps {
     roomId: string
@@ -32,6 +39,8 @@ export interface GameLogicRenderProps {
     confirmPlacement: () => Promise<void>
 
     gameStateJson: string | null
+    ownerColorMap: Record<string, string>
+    getColorForOwner: (owner: string | null) => string
 }
 
 export const GameLogic: React.FC<GameLogicProps> = ({
@@ -41,6 +50,7 @@ export const GameLogic: React.FC<GameLogicProps> = ({
     children,
 }) => {
     const [mode, setMode] = useState<GameMode>('view')
+    const [territories, setTerritories] = useState<TerritoryData[]>([])
 
     const [activeRegionId, setActiveRegionId] = useState<string | null>(null)
     const [selectedFromRegionId, setSelectedFromRegionId] = useState<
@@ -52,7 +62,44 @@ export const GameLogic: React.FC<GameLogicProps> = ({
 
     const [troopCount, setTroopCount] = useState<number>(1)
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // Parse game state and extract territories
+    useEffect(() => {
+        if (!propsGameStateJson) return
+
+        try {
+            const parsed = JSON.parse(propsGameStateJson)
+            if (Array.isArray(parsed)) {
+                setTerritories(parsed)
+            }
+        } catch (err) {
+            console.error('Fehler beim Parsen von gameStateJson:', err)
+        }
+    }, [propsGameStateJson])
+
+    // Parse game state and extract territories
+    useEffect(() => {
+        if (!propsGameStateJson) return
+
+        try {
+            const parsed = JSON.parse(propsGameStateJson)
+            if (Array.isArray(parsed)) {
+                setTerritories(parsed)
+            }
+        } catch (err) {
+            console.error('Fehler beim Parsen von gameStateJson:', err)
+        }
+    }, [propsGameStateJson])
+
+    // Get stable color mapping
+    const ownerColorMap = useOwnerColorMap(territories)
+
+    // Wrapper function for getting color
+    const getColorForOwnerWrapped = useCallback(
+        (owner: string | null) => getColorForOwner(owner, ownerColorMap),
+        [ownerColorMap]
+    )
+
+       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const buildHeaders = useCallback((): HeadersInit => {
         const headers: HeadersInit = {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -292,6 +339,8 @@ export const GameLogic: React.FC<GameLogicProps> = ({
                 confirmMove,
                 confirmPlacement,
                 gameStateJson: propsGameStateJson || null,
+                ownerColorMap,
+                getColorForOwner: getColorForOwnerWrapped,
             })}
         </>
     )

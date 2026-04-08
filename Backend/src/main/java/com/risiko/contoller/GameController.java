@@ -59,6 +59,9 @@ public class GameController {
 
         try {
             emitter.send(SseEmitter.event().name("init").data(room.getLobbyData()).build());
+            if(room.isGameStarted()) {
+                room.getGamestate().sendGameStateUpdate();
+            }
         } catch (IOException e) {
             emitter.completeWithError(e);
         }
@@ -89,7 +92,7 @@ public class GameController {
         room.getGamestate().sendGameStateUpdate();
     }
 
-    public void broadcastEvent(List<SseEmitter> emitters, String eventName, String data) {
+    public void broadcastEvent(List<SseEmitter> emitters, String eventName, Object data) {
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(SseEmitter.event().name(eventName).data(data).build());

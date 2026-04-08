@@ -4,11 +4,8 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.scheduling.annotation.Scheduled;
-
 import com.risiko.contoller.GameController;
 import com.risiko.model.Room;
 import com.risiko.repository.UserRepository;

@@ -1,5 +1,5 @@
 "use client";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Lobby } from "@/components/Lobby";
 import GamePage from "@/components/game/GamePage";
@@ -11,18 +11,25 @@ import { distTroops } from "@/components/api/distTroops";
 export default function RoomPage() {
   const { roomId } = useParams() as { roomId?: string };
   const [playerNames, setPlayerNames] = useState<string[]>([]);
-  const [chatMessages, setChatMessages] = useState<{username: string; message:string}[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ username: string; message: string }[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameStateJson, setGameStateJson] = useState<string | null>(null);
   const [pendingDistCount, setPendingDistCount] = useState<number | null>(null);
   const [dialogTerritory, setDialogTerritory] = useState<string | null>(null);
   const router = useRouter();
   const currentUser = useGetCurrentUser();
+  const searchParams = useSearchParams();
 
   function playerListUpdated(e: MessageEvent) {
-      const data: { username: string; host: boolean }[] = JSON.parse(e.data);
-      setPlayerNames(data.map(player => player.username));
+    const data: { username: string; host: boolean }[] = JSON.parse(e.data);
+    setPlayerNames(data.map(player => player.username));
   }
+
+  useEffect(() => {
+    if (searchParams.get("started") === "true") {
+      setGameStarted(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!roomId) return;
@@ -36,25 +43,31 @@ export default function RoomPage() {
     eventSource.addEventListener("init", (e: MessageEvent) => playerListUpdated(e));
     eventSource.addEventListener("playerJoined", (e: MessageEvent) => playerListUpdated(e));
     eventSource.addEventListener("playerLeft", (e: MessageEvent) => playerListUpdated(e));
-    eventSource.addEventListener("gameStarted", () => setGameStarted(true));
+    eventSource.addEventListener("gameStarted", () => {
+      setGameStarted(true);
+      router.push(`/room/${roomId}?started=true`);
+    });
     eventSource.addEventListener("gameStateUpdate", (e: MessageEvent) => setGameStateJson(e.data));
     eventSource.addEventListener("askDistTroops", (e: MessageEvent) => {
       const data: number = JSON.parse(e.data);
       setPendingDistCount(data);
     });
-
     eventSource.addEventListener("chatMessage", (e: MessageEvent) => {
       const data: { username: string; message: string } = JSON.parse(e.data);
-      setChatMessages((prev) => [...prev, data]); 
+      setChatMessages((prev) => [...prev, data]);
     });
-
+    eventSource.addEventListener("currentPlayer", (e: MessageEvent) => {
+      if (currentUser && currentUser.username === e.data) {
+        alert("Du bist am Zug! Verteile deine Truppen.");
+      }
+    });
     eventSource.onerror = (err) => {
       console.error("SSE error", err);
       eventSource.close();
     };
 
     return () => eventSource.close();
-  }, [roomId]);
+  }, [roomId, currentUser]);
 
   async function onDistSubmit(territoryId: string) {
     if (pendingDistCount == null) return
@@ -98,7 +111,7 @@ export default function RoomPage() {
       {gameStarted ? (
         <>
           {pendingDistCount != null && (
-            <div style={{position: 'fixed', right: 16, top: 16, zIndex: 2000}}>
+            <div style={{ position: 'fixed', right: 16, top: 16, zIndex: 2000 }}>
               <div className="rounded bg-[#0b1220] border border-[rgba(59,130,246,0.25)] px-4 py-3 text-white shadow">
                 <div className="flex items-center gap-3">
                   <div>
@@ -120,11 +133,11 @@ export default function RoomPage() {
             onCancel={() => setDialogTerritory(null)}
           />
 
-          <GamePage roomId={roomId!} gameStateJson={gameStateJson} pendingDistCount={pendingDistCount} onDistSubmit={onDistSubmit} />
+          <GamePage roomId={roomId!} gameStateJson={gameStateJson} pendingDistCount={pendingDistCount} onDistSubmit={onDistSubmit} playerNames={playerNames} chatMessages={chatMessages} />
         </>
       ) : (
         <Lobby roomId={roomId!} playerNames={playerNames} chatMessages={chatMessages} onGameStart={() => handleGameStarted()} router={router} />
-      )}    
+      )}
     </>
   );
 }

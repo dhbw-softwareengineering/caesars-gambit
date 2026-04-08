@@ -74,8 +74,9 @@ export default function GameCard({ onRegionClick, gameStateJson, onTerritoryButt
                     alt="Spielkarte"
                     className={styles.mapBg}
                     priority
-                    width={1200}
-                    height={800}
+                    width={2400}
+                    height={1600}
+                    style={{ width: '100%', height: '100%' }}
                 />
 
                 <div ref={svgContainerRef} className={styles.mapSvgContainer} />

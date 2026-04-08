@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.risiko.model.User;
+import com.risiko.model.dto.UserDto;
 import com.risiko.repository.UserRepository;
 import com.risiko.services.AuthService;
 
@@ -23,10 +24,10 @@ public class UserController {
     private UserRepository userRepository;
 
     @GetMapping("/currentUser")
-    public ResponseEntity<String> getCurrentUser(HttpServletRequest request) {
+    public ResponseEntity<UserDto> getCurrentUser(HttpServletRequest request) {
         String token = request.getHeader("Authorization").substring(7);
         long userId = authService.getUserIdFromToken(token);
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok("{\"username\": \"" + user.getUsername() + "\"}");
+        return ResponseEntity.ok(new UserDto(user.getUsername()));
     }
 }
