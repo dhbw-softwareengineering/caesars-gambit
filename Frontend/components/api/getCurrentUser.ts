@@ -18,7 +18,9 @@ export function useGetCurrentUser() {
 
         setData(await response.json());
     };
-        fetchData();
+    if (token !== null) {
+         void fetchData();
+    }
     }, []);
     return data;
 }

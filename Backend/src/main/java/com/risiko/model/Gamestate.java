@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.risiko.contoller.GameController;
+import com.risiko.model.dto.TerritoryStateDto;
 
 public class Gamestate {
     private final List<Player> players;
@@ -134,12 +135,9 @@ public class Gamestate {
     }
 
     public void sendGameStateUpdate() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
+        List<TerritoryStateDto> state = new ArrayList<>();
         Territorries[] all = Territorries.values();
-        for (int i = 0; i < all.length; i++) {
-            Territorries t = all[i];
-            if (i > 0) sb.append(',');
+        for (Territorries t : all) {
             String display = t.getDisplayName();
             String owner = null;
             int troops = 0;
@@ -152,31 +150,13 @@ public class Gamestate {
                     break;
                 }
             }
-            sb.append('{');
-            sb.append("\"territory\":\"").append(jsonEscape(display)).append('\"').append(',');
-            sb.append("\"owner\":");
-            if (owner == null) {
-                sb.append("null");
-            } else {
-                sb.append('"').append(jsonEscape(owner)).append('"');
-            }
-            sb.append(',');
-            sb.append("\"troops\":").append(troops);
-            sb.append('}');
+            state.add(new TerritoryStateDto(display, owner, troops));
         }
-        sb.append("]");
-        String gameState = sb.toString();
-
         List<SseEmitter> emitters = players.stream()
             .map(p -> p.emitter)
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
-        gameController.broadcastEvent(emitters, "gameStateUpdate", gameState);
-    }
-
-    private static String jsonEscape(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
+        gameController.broadcastEvent(emitters, "gameStateUpdate", state);
     }
 
 

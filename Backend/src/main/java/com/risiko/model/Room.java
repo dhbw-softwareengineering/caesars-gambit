@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.risiko.contoller.GameController;
+import com.risiko.model.dto.ChatMessageDto;
+import com.risiko.model.dto.LobbyPlayerDto;
 import com.risiko.repository.UserRepository;
 
 public class Room {
@@ -53,10 +55,10 @@ public class Room {
         gameController.broadcastEvent(emitters, "playerLeft", getLobbyData());
     }
 
-    public String getLobbyData() {
+    public List<LobbyPlayerDto> getLobbyData() {
         return players.stream()
-            .map(p -> "{\"username\":\"" + p.username + "\", \"host\": \"" + p.isHost() + "\"}")
-            .collect(Collectors.joining(",", "[", "]"));
+            .map(p -> new LobbyPlayerDto(p.username, p.isHost()))
+            .collect(Collectors.toList());
     }
 
     public void startGame() {
@@ -85,6 +87,10 @@ public class Room {
         return players;
     }
 
+    public boolean isGameStarted() {
+        return gameStarted;
+    }
+
     public void sendMessage(long userId, String message) {
         Player sender = players.stream()
             .filter(p -> p.getUserId() == userId)
@@ -93,7 +99,7 @@ public class Room {
         if (sender == null) {
             throw new IllegalArgumentException("User not in room");
         }
-        String formattedMessage = "{\"username\":\"" + sender.username + "\", \"message\":\"" + message + "\"}";
+        ChatMessageDto formattedMessage = new ChatMessageDto(sender.username, message);
         List<SseEmitter> emitters = players.stream()
             .map(p -> p.emitter)
             .filter(e -> e != null)

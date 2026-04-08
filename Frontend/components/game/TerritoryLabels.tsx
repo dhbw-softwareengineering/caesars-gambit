@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useOwnerColorMap, getColorForOwner } from '@/lib/useOwnerColorMap'
 
 interface TerritoryData {
     territory: string
@@ -23,9 +24,6 @@ export const TerritoryLabels: React.FC<TerritoryLabelsProps> = ({
         try {
             const parsed = JSON.parse(gameStateJson)
             if (Array.isArray(parsed)) {
-                // debug: log what we received (appears in browser console)
-                console.log('gameStateUpdate parsed:', parsed)
-                // Wrap setState in a microtask to avoid cascading renders
                 Promise.resolve().then(() => setTerritories(parsed))
             }
         } catch (err) {
@@ -33,37 +31,8 @@ export const TerritoryLabels: React.FC<TerritoryLabelsProps> = ({
         }
     }, [gameStateJson])
 
-    // derive a stable owner -> color map from the current territories (first-seen order)
-    const ownerColorMap = useMemo(() => {
-        const palette = [
-            '#e6194b',
-            '#3cb44b',
-            '#ffe119',
-            '#4363d8',
-            '#f58231',
-            '#911eb4',
-            '#46f0f0',
-            '#f032e6',
-            '#bcf60c',
-            '#fabebe',
-        ]
+    const ownerColorMap = useOwnerColorMap(territories)
 
-        const map: Record<string, string> = {}
-        let nextIndex = 0
-
-        territories.forEach((t) => {
-            if (!t.owner) return
-            if (!map[t.owner]) {
-                map[t.owner] = palette[nextIndex % palette.length]
-                nextIndex += 1
-            }
-        })
-
-        return map
-    }, [territories])
-
-    // Zentroid-Positionen für jedes Territorium (basierend auf SVG viewBox 0 0 1093.3333 717.33331)
-    // Diese müssen manuell aus der SVG-Datei ermittelt oder berechnet werden
     const territoryPositions: Record<string, { x: number; y: number }> = {
         Palatin: { x: 166.3, y: 92.6 },
         Laterano: { x: 296.2, y: 107.0 },
@@ -137,7 +106,6 @@ export const TerritoryLabels: React.FC<TerritoryLabelsProps> = ({
                 inset: 0,
                 width: '100%',
                 height: '100%',
-                // let clicks pass through the overlay except for the clickable buttons
                 pointerEvents: 'none',
                 zIndex: 50,
                 mixBlendMode: 'normal',
@@ -150,12 +118,8 @@ export const TerritoryLabels: React.FC<TerritoryLabelsProps> = ({
                     return null
                 }
 
-                const owner = territory.owner
-                const color = owner ? ownerColorMap[owner] || '#888888' : '#666666'
+                const color = getColorForOwner(territory.owner, ownerColorMap)
 
-                // render a clickable, centered button (SVG group) that is the only part
-                // of the overlay that captures pointer events. Everything else lets
-                // events pass through to the (invisible) base SVG beneath.
                 return (
                     <g key={territory.territory}>
                         <circle

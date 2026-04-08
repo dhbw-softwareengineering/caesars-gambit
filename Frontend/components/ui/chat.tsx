@@ -30,7 +30,7 @@ export function Chat({ msg, roomId }: ChatProps) {
     }
   };
 
-if (user === null) {
+if (user === null || !msg) {
   return <div>Loading...</div>;
 }
 

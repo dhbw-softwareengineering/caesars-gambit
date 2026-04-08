@@ -1,225 +1,152 @@
 import GameCard from './GameCard'
-import { GameLogic } from './GameLogic'
-import mainmenuStyles from '../../app/mainmenu/mainmenu.module.css'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import { Chat } from '../ui/chat'
+import { useEffect, useState } from 'react'
+import { DistributionDialog } from './DistributionDialog'
+import { getColorForOwner, useOwnerColorMap } from '@/lib/useOwnerColorMap'
+import { distTroops } from '../api/distTroops'
+import { useGetCurrentUser } from '../api/getCurrentUser'
 
-interface GamePageProps {
+type GamePageProps = {
     roomId: string
     gameStateJson: string | null
+    setPendingDistCount: (count: number) => void
     pendingDistCount?: number | null
-    onDistSubmit?: (territoryId: string) => Promise<void> | void
+    playerNames: string[]
+    chatMessages: { username: string; message: string }[]
 }
 
-export default function GamePage({ roomId, gameStateJson, pendingDistCount = null, onDistSubmit }: GamePageProps) {
+type TerritoryData = {
+    territory: string
+    owner: string | null
+    troops: number
+}
+
+export default function GamePage({ roomId, gameStateJson, pendingDistCount = null, playerNames, chatMessages, setPendingDistCount }: GamePageProps) {
+    const [regionClicked, setRegionClicked] = useState<string | null>(null)
+    const [dialogTerritory, setDialogTerritory] = useState<string | null>(null);
+    const [territories, setTerritories] = useState<TerritoryData[]>([])
+    const ownerColorMap = useOwnerColorMap(territories)
+    const currentUser = useGetCurrentUser()
+
+    useEffect(() => {
+        if (!gameStateJson) return
+
+        try {
+            const parsed = JSON.parse(gameStateJson)
+            if (Array.isArray(parsed)) {
+                setTerritories(parsed)
+            }
+        } catch (err) {
+            console.error('Fehler beim Parsen von gameStateJson:', err)
+        }
+    }, [gameStateJson])
+
+    function territoryOwnedByCurrentUser(territoryId: string): boolean {
+        const territory = territories.find((t) => t.territory === territoryId)
+        return territory?.owner === currentUser?.username
+    }
+
+    function onDistSubmit(territoryId: string) {
+        if (pendingDistCount == null) return
+        if (!territoryOwnedByCurrentUser(territoryId)) {
+            console.log("Hier noch was einbauen für UX")
+            return;
+        }
+
+        setDialogTerritory(territoryId)
+    }
+
+    async function handleDialogConfirm(num: number) {
+        if (pendingDistCount == null || !dialogTerritory) return
+
+        await distTroops(num, dialogTerritory, roomId!);
+
+
+        setPendingDistCount((prev) => {
+            const remaining = prev - num
+            return remaining > 0 ? remaining : null
+        })
+
+        setDialogTerritory(null)
+    }
+
+    function handleRegionClick(regionId: string) {
+        if (!regionClicked && !territoryOwnedByCurrentUser(regionId)) {
+            console.log("Hier einbauen, dass nicht eigenes Gebiert ist")
+            return
+        }
+
+        if (pendingDistCount) {
+            onDistSubmit(regionId)
+            return
+        }
+
+        if (regionClicked === regionId) {
+            return;
+        }
+        if (regionClicked) {
+            if (territoryOwnedByCurrentUser(regionId)) {
+                console.log("Hier Dialog aufrufen wie viele dahin verschoben werden sollen")
+                setRegionClicked(null)
+                return;
+            } else {
+                console.log("Hier einbauen dass angegriffen wird")
+                setRegionClicked(null)
+                return;
+            }
+        }
+        console.log('Region angeklickt:', regionId, regionClicked)
+        setRegionClicked(regionId)
+    }
     return (
-        <GameLogic roomId={roomId} gameStateJson={gameStateJson}>
-            {({
-                mode,
-                setMode,
-                activeRegionId,
-                selectedFromRegionId,
-                selectedToRegionId,
-                troopCount,
-                incrementTroops,
-                decrementTroops,
-                handleRegionClick,
-                confirmAttack,
-                confirmMove,
-                confirmPlacement,
-                gameStateJson: renderGameStateJson,
-            }) => (
-                <div className={mainmenuStyles.container}>
-                    <div
-                        className={`${mainmenuStyles.card} flex flex-col gap-6 lg:flex-row`}
-                    >
-                        {/* LEFT: MAP */}
-                        <section className="flex-1 flex flex-col gap-3">
-                            <header className="flex flex-col gap-1">
-                                <h1 className="text-2xl font-bold text-[rgba(225,240,255,0.95)]">
-                                    Spielkarte
-                                </h1>
-                                <p className="text-sm text-[rgba(189,215,255,0.85)]">
-                                    Klicke auf eine Region, um sie auszuwählen
-                                    und oben rechts den Modus zu wechseln.
-                                </p>
-                            </header>
+        <div style={{ background: '#07142a', height: "100vh", display: "flex", color: "white", width: "100%" }}>
+            <div
+                className={`gap-6 rounded-32`}
+                style={{ display: 'flex', flexDirection: 'row', width: '100%', height: 'fit-content', padding: '24px', borderRadius: '12px', boxSizing: 'border-box', alignItems: 'center', background: "rgba(255,255,255,0.02)", border: "1px solid rgba(59,130,246,0.08)", margin: "16px" }}
+            >
+                <div className="flex-1 flex flex-col gap-6 min-w-96" style={{ height: 'fit-content', display: 'flex', flexDirection: 'column' }}>
 
-                            <div className="relative rounded-xl border border-[rgba(59,130,246,0.25)] bg-black/30 overflow-hidden shadow-md">
-                                <GameCard onRegionClick={handleRegionClick} gameStateJson={renderGameStateJson} onTerritoryButtonClick={(id) => { if (pendingDistCount && onDistSubmit) { void onDistSubmit(id); } else { handleRegionClick(id); } }} />
+                    <div className="space-y-2 flex-shrink-0">
+                        <h2 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(189,215,255,0.65)' }}>Spieler</h2>
+                        {playerNames.map((name, index) => (
+                            <div key={index} className="flex items-center gap-3 p-2 rounded-md border border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.3)] transition-colors">
+                                <div
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm text-white font-semibold flex-shrink-0"
+                                    style={{ backgroundColor: getColorForOwner(name, ownerColorMap) }}
+                                >
+                                    {name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="text-sm font-medium truncate">{name}</div>
                             </div>
-                        </section>
-
-                        {/* RIGHT: CONTROL PANEL */}
-                        <aside className="w-full lg:w-80 flex flex-col gap-4">
-                            {/* Mode */}
-                            <div className="rounded-xl border border-[rgba(59,130,246,0.18)] bg-[rgba(15,23,42,0.85)] px-4 py-3 flex flex-col gap-3">
-                                <div className="flex items-center justify-between gap-2">
-                                    <div>
-                                        <h2 className="text-sm font-semibold text-[rgba(225,240,255,0.95)]">
-                                            Modus
-                                        </h2>
-                                        <p className="text-xs text-[rgba(189,215,255,0.75)]">
-                                            Wähle, was du auf der Karte tun
-                                            möchtest.
-                                        </p>
-                                    </div>
-                                    <span className="px-2 py-1 rounded-full text-[10px] font-semibold bg-[rgba(59,130,246,0.16)] text-[rgba(191,219,254,1)] uppercase tracking-wide">
-                                        {mode === 'view' && 'Ansehen'}
-                                        {mode === 'place' && 'Aufstellen'}
-                                        {mode === 'attack' && 'Angreifen'}
-                                        {mode === 'move' && 'Verschieben'}
-                                    </span>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2">
-                                    <Button
-                                        size="sm"
-                                        variant={
-                                            mode === 'view'
-                                                ? 'primary'
-                                                : 'default'
-                                        }
-                                        onClick={() => setMode('view')}
-                                    >
-                                        Region ansehen
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant={
-                                            mode === 'place'
-                                                ? 'primary'
-                                                : 'default'
-                                        }
-                                        onClick={() => setMode('place')}
-                                    >
-                                        Aufstellen
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant={
-                                            mode === 'attack'
-                                                ? 'primary'
-                                                : 'default'
-                                        }
-                                        onClick={() => setMode('attack')}
-                                    >
-                                        Angreifen
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        variant={
-                                            mode === 'move'
-                                                ? 'primary'
-                                                : 'default'
-                                        }
-                                        onClick={() => setMode('move')}
-                                    >
-                                        Verschieben
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {/* Selection */}
-                            <div className="rounded-xl border border-[rgba(59,130,246,0.18)] bg-[rgba(15,23,42,0.85)] px-4 py-3 flex flex-col gap-3">
-                                <h2 className="text-sm font-semibold text-[rgba(225,240,255,0.95)]">
-                                    Auswahl
-                                </h2>
-                                <div className="text-xs text-[rgba(189,215,255,0.85)] space-y-1">
-                                    <p>
-                                        <span className="text-[rgba(148,163,184,1)]">
-                                            Aktiv:{' '}
-                                        </span>
-                                        <span className="font-mono">
-                                            {activeRegionId ?? '–'}
-                                        </span>
-                                    </p>
-                                    <p>
-                                        <span className="text-[rgba(148,163,184,1)]">
-                                            Von:{' '}
-                                        </span>
-                                        <span className="font-mono">
-                                            {selectedFromRegionId ?? '–'}
-                                        </span>
-                                    </p>
-                                    <p>
-                                        <span className="text-[rgba(148,163,184,1)]">
-                                            Nach:{' '}
-                                        </span>
-                                        <span className="font-mono">
-                                            {selectedToRegionId ?? '–'}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Troops & Actions */}
-                            <div className="rounded-xl border border-[rgba(59,130,246,0.18)] bg-[rgba(15,23,42,0.85)] px-4 py-3 flex flex-col gap-3">
-                                <h2 className="text-sm font-semibold text-[rgba(225,240,255,0.95)]">
-                                    Truppen
-                                </h2>
-
-                                <div className="flex items-center gap-3">
-                                    <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        className="w-10"
-                                        onClick={decrementTroops}
-                                    >
-                                        -
-                                    </Button>
-                                    <span className="min-w-[3rem] text-center font-mono text-base text-[rgba(225,240,255,0.95)]">
-                                        {troopCount}
-                                    </span>
-                                    <Button
-                                        size="sm"
-                                        variant="secondary"
-                                        className="w-10"
-                                        onClick={incrementTroops}
-                                    >
-                                        +
-                                    </Button>
-                                </div>
-
-                                <Separator className="my-2 bg-[rgba(30,64,175,0.6)]" />
-
-                                <div className="flex flex-col gap-2">
-                                    {mode === 'place' && (
-                                        <Button
-                                            variant="primary"
-                                            onClick={confirmPlacement}
-                                        >
-                                            Truppen aufstellen
-                                        </Button>
-                                    )}
-                                    {mode === 'move' && (
-                                        <Button
-                                            variant="primary"
-                                            onClick={confirmMove}
-                                        >
-                                            Truppen verschieben
-                                        </Button>
-                                    )}
-                                    {mode === 'attack' && (
-                                        <Button
-                                            variant="destructive"
-                                            onClick={confirmAttack}
-                                        >
-                                            Angriff starten
-                                        </Button>
-                                    )}
-                                    {mode === 'view' && (
-                                        <p className="text-xs text-[rgba(148,163,184,1)]">
-                                            Wähle einen Modus, um eine Aktion
-                                            durchzuführen.
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        </aside>
+                        )
+                        )}
+                    </div>
+                    <div className="flex-grow flex flex-col min-h-0 overflow-hidden">
+                        <h2 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(189,215,255,0.65)' }}>Chat</h2>
+                        <div className="bg-white border rounded-md p-3 shadow-sm flex-grow flex flex-col overflow-hidden w-full">
+                            <Chat msg={chatMessages} roomId={roomId} />
+                        </div>
                     </div>
                 </div>
-            )}
-        </GameLogic>
+
+                <div className="flex-grow flex flex-col">
+                    <div className="relative rounded-xl border border-[rgba(59,130,246,0.25)] bg-black/30 overflow-hidden shadow-md w-full" style={{}}>
+                        <GameCard
+                            onRegionClick={handleRegionClick}
+                            gameStateJson={gameStateJson}
+                        />
+                        <button onClick={() => console.log("EndTurn")}>EndTurn</button>
+                    </div>
+                </div>
+            </div>
+            <DistributionDialog
+                isOpen={dialogTerritory != null}
+                territoryName={dialogTerritory || ''}
+                availableTroops={pendingDistCount || 0}
+                onConfirm={handleDialogConfirm}
+                onCancel={() => setDialogTerritory(null)}
+            />
+        </div>
+
     )
 }
