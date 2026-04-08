@@ -11,6 +11,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV BUILD_STANDALONE=1
 RUN pnpm build
 
 # Production stage

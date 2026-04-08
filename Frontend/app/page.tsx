@@ -1,3 +1,5 @@
+"use client";
+
 import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { BadgeCheckIcon, ChevronRightIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
