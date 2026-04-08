@@ -7,9 +7,29 @@ on:
     branches: [main]
 
 jobs:
+  # ── Detect which parts of the codebase changed ────────────────────────────
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3.0.2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'Backend/**'
+            frontend:
+              - 'Frontend/**'
+
   # ── CI: Validierung bei jedem Push und PR ──────────────────────────────────
   test-backend:
     name: Backend - Compile & Test
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +46,8 @@ jobs:
 
   test-frontend:
     name: Frontend - Lint & Typecheck
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,8 +77,10 @@ jobs:
   # ── CI: Docker-Build-Test bei PRs (kein Push) ───────────────────────────
   build-test:
     name: Docker Build Test (PR only)
-    if: github.event_name == 'pull_request'
-    needs: [test-backend, test-frontend]
+    if: |
+      github.event_name == 'pull_request' &&
+      (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true')
+    needs: [changes, test-backend, test-frontend]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -80,8 +104,13 @@ jobs:
   # ── CD: Docker-Images bauen & nach GHCR pushen ────────────────────────────
   build-and-push:
     name: Build & Push to GHCR
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI/CD')
-    needs: [test-backend, test-frontend]
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI/CD') &&
+      (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true') &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
+    needs: [changes, test-backend, test-frontend]
     runs-on: ubuntu-latest
     permissions:
       contents: read
