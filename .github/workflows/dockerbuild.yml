@@ -6,10 +6,33 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
+  # ── Detect which parts of the codebase changed ────────────────────────────
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3.0.2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'Backend/**'
+            frontend:
+              - 'Frontend/**'
+
   # ── CI: Validierung bei jedem Push und PR ──────────────────────────────────
   test-backend:
     name: Backend - Compile & Test
+    needs: changes
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,6 +49,8 @@ jobs:
 
   test-frontend:
     name: Frontend - Lint & Typecheck
+    needs: changes
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,8 +80,10 @@ jobs:
   # ── CI: Docker-Build-Test bei PRs (kein Push) ───────────────────────────
   build-test:
     name: Docker Build Test (PR only)
-    if: github.event_name == 'pull_request'
-    needs: [test-backend, test-frontend]
+    if: |
+      github.event_name == 'pull_request' &&
+      (needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true')
+    needs: [changes, test-backend, test-frontend]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -78,24 +105,17 @@ jobs:
           push: false
 
   # ── CD: Docker-Images bauen & nach GHCR pushen ────────────────────────────
-  build-and-push:
-    name: Build & Push to GHCR
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI/CD')
-    needs: [test-backend, test-frontend]
+  build-and-push-backend:
+    name: Build & Push Backend to GHCR
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI/CD') &&
+      needs.changes.outputs.backend == 'true'
+    needs: [changes, test-backend]
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    strategy:
-      matrix:
-        include:
-          - name: backend
-            context: ./Backend
-            image: caesars-gambit-backend
-          - name: frontend
-            context: ./Frontend
-            image: caesars-gambit-frontend
-
     steps:
       - uses: actions/checkout@v4
 
@@ -107,36 +127,68 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}  # automatisch verfügbar, kein Secret nötig
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          images: ghcr.io/${{ github.repository_owner }}/caesars-gambit-backend
           tags: |
             type=sha,prefix=sha-
             type=raw,value=latest
 
-      - name: Build and push ${{ matrix.name }}
+      - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
+          context: ./Backend
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:buildcache
-          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}:buildcache,mode=max
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/caesars-gambit-backend:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/caesars-gambit-backend:buildcache,mode=max
 
-  # ── CD: Portainer-Stack neu laden ─────────────────────────────────────────
-  deploy:
-    name: Deploy via Portainer Webhook
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build-and-push
+  build-and-push-frontend:
+    name: Build & Push Frontend to GHCR
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI/CD') &&
+      needs.changes.outputs.frontend == 'true'
+    needs: [changes, test-frontend]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - name: Trigger Portainer stack webhook
-        run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${{ secrets.PORTAINER_WEBHOOK_URL }}")
-          echo "Portainer response: $HTTP_STATUS"
-          [[ "$HTTP_STATUS" =~ ^2 ]] || { echo "Webhook failed"; exit 1; }
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/caesars-gambit-frontend
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./Frontend
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://cg-api.knoep.de
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/caesars-gambit-frontend:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/caesars-gambit-frontend:buildcache,mode=max
