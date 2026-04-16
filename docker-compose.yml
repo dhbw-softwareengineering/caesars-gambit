@@ -28,7 +28,7 @@ services:
       - db
 
   frontend:
-    build: ./Frontend/caesars-gambit
+    build: ./Frontend
     ports:
       - "3000:3000"
     environment:

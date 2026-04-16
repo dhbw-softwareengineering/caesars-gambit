@@ -8,10 +8,13 @@ import { useGetCurrentUser } from '@/components/api/getCurrentUser';
 import { DistributionDialog } from '@/components/game/DistributionDialog';
 import { distTroops } from "@/components/api/distTroops";
 
+import { API_BASE_URL } from "@/lib/api";
+
 export default function RoomPage() {
-  const { roomId } = useParams() as { roomId?: string };
+  const params = useParams();
+  const roomId = params.roomId as string;
   const [playerNames, setPlayerNames] = useState<string[]>([]);
-  const [chatMessages, setChatMessages] = useState<{username: string; message:string}[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ username: string; message: string }[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameStateJson, setGameStateJson] = useState<string | null>(null);
   const [pendingDistCount, setPendingDistCount] = useState<number | null>(null);
@@ -28,10 +31,10 @@ export default function RoomPage() {
     if (!roomId) return;
 
     const token = localStorage.getItem("accessToken");
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-    const url = `${apiBase}/api/game/stream/${roomId}?token=${encodeURIComponent(token!)}`;
+    const url = `${API_BASE_URL}/api/game/stream/${roomId}?token=${encodeURIComponent(token!)}`;
     const eventSource = new EventSource(url);
+
 
     eventSource.addEventListener("init", (e: MessageEvent) => playerListUpdated(e));
     eventSource.addEventListener("playerJoined", (e: MessageEvent) => playerListUpdated(e));

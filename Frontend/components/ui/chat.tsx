@@ -7,6 +7,10 @@ type ChatProps = {
   roomId?: string | number;
 };
 
+import { cn } from "@/lib/utils";
+import { Button } from "./button";
+import { Input } from "./input";
+
 export function Chat({ msg, roomId }: ChatProps) {
   const [messageInput, setMessageInput] = useState<string>("");
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -31,21 +35,23 @@ export function Chat({ msg, roomId }: ChatProps) {
   };
 
 if (user === null) {
-  return <div>Loading...</div>;
+  return <div className="p-4 text-sm text-muted-foreground animate-pulse">Lade Chat...</div>;
 }
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-700">Chat</h3>
-        <span className="text-xs text-gray-500">{msg.length} messages</span>
+      <div className="flex items-center justify-between mb-3 px-1">
+        <h3 className="text-sm font-semibold text-foreground">Chat</h3>
+        <span className="text-[10px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-full uppercase tracking-wider">{msg.length} Nachrichten</span>
       </div>
 
       <div
         ref={listRef}
-        className="h-80 bg-white border rounded-md p-3 overflow-auto space-y-2 shadow-sm">
+        className="h-80 bg-slate-50/50 border border-input rounded-md p-3 overflow-auto space-y-3 shadow-inner scroll-smooth">
         {msg.length === 0 && (
-          <div className="text-center text-sm text-gray-400">Kein Chatverlauf</div>
+          <div className="h-full flex items-center justify-center text-center text-sm text-muted-foreground italic">
+            Kein Chatverlauf
+          </div>
         )}
 
         {msg.map((item, index) => {
@@ -61,36 +67,33 @@ if (user === null) {
           const isOwnMessage = user && user.username === item.username;
 
           return (
-            <div key={index} className="flex items-start gap-3">
-              {isOwnMessage ? (
-                <div className="w-full flex justify-end">
-                  <div className="max-w-xs px-3 bg-slate-50 py-2 rounded-md text-slate-800 text-sm">
-                    {item.message}
-                  </div>
+            <div key={index} className={cn("flex items-start gap-2", isOwnMessage ? "flex-row-reverse" : "flex-row")}>
+              {!isOwnMessage && (
+                <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                  {initials}
                 </div>
-              ) : (
-                <>
-                  <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-700">
-                    {initials}
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs text-slate-500">{item.username}</div>
-                    <div className="mt-1 bg-slate-50 px-3 py-2 rounded-md text-sm text-slate-800 border border-slate-100">
-                      {item.message}
-                    </div>
-                  </div>
-                </>
               )}
+              <div className={cn("flex flex-col gap-1 max-w-[85%]", isOwnMessage ? "items-end" : "items-start")}>
+                {!isOwnMessage && <div className="text-[10px] font-bold text-muted-foreground ml-1 uppercase">{item.username}</div>}
+                <div className={cn(
+                  "px-3 py-2 rounded-2xl text-sm shadow-sm",
+                  isOwnMessage 
+                    ? "bg-primary text-primary-foreground rounded-tr-none" 
+                    : "bg-white text-foreground border border-input rounded-tl-none"
+                )}>
+                  {item.message}
+                </div>
+              </div>
             </div>
           );
         })
       }
       </div>
 
-      <div className="mt-3 flex gap-2">
-        <input
-          className="flex-1 rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300"
-          placeholder="Nachricht schreiben..."
+      <div className="mt-4 flex gap-2">
+        <Input
+          className="flex-1"
+          placeholder="Schreibe etwas..."
           value={messageInput}
           onChange={(e) => setMessageInput(e.target.value)}
           onKeyDown={(e) => {
@@ -101,14 +104,13 @@ if (user === null) {
           }}
         />
 
-        <button
-          className={`px-4 py-2 rounded-md font-semibold text-white ${
-            messageInput.trim() ? "bg-violet-600 hover:bg-violet-700" : "bg-violet-300 cursor-not-allowed"
-          }`}
+        <Button
+          className="w-auto px-5"
+          variant="primary"
           onClick={() => void handleSend()}
           disabled={!messageInput.trim() || !numericRoomId || Number.isNaN(numericRoomId)}>
           Senden
-        </button>
+        </Button>
       </div>
     </div>
   );

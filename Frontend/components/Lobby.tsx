@@ -13,8 +13,13 @@ type LobbyProps = {
     router: AppRouterInstance; 
 };
 
+import { useAppState } from "@/lib/AppStateContext";
+
+import { Item, ItemContent, ItemTitle, ItemMedia, ItemGroup } from "./ui/item";
+
 export function Lobby({roomId, playerNames, chatMessages, onGameStart, router}: LobbyProps) {
     const [copied, setCopied] = useState(false);
+    const { setError, withLoading } = useAppState();
 
     const handleShare = async () => {
         const url = window.location.href;
@@ -33,61 +38,86 @@ export function Lobby({roomId, playerNames, chatMessages, onGameStart, router}: 
 
     const handleLeaveRoom = async () => {
         try {
-            await leaveRoom(Number(roomId));
-            router.push('/mainmenu');
+            await withLoading(async () => {
+                await leaveRoom(Number(roomId));
+                router.push('/mainmenu');
+            });
         } catch (err) {
-            console.error('Failed to leave room:', err);
+            setError(err instanceof Error ? err.message : 'Verlassen des Raums fehlgeschlagen.');
         }
     };
 
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-6xl px-6 py-12">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold  ">Risiko online</h1>
-          <p className="text-sm  mt-2">#{roomId}</p>
-        </div>
-        <div className="grid grid-cols-3 gap-10 items-start">
+    const handleStartGame = async () => {
+        try {
+            await withLoading(async () => {
+                await startGame(Number(roomId));
+                onGameStart();
+            });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Spielstart fehlgeschlagen.');
+        }
+    };
 
-        <aside className="col-span-1 max-w-[20rem] ">
-          <div className="bg-white border rounded-md p-3 shadow-sm w-full mx-auto">
-            <h2 className="text-sm font-semibold text-gray-600 mb-4">Spieler</h2>
-            <div className="flex flex-col gap-2">
-              {playerNames.length === 0 && (
-                <div className="text-sm text-gray-400">Noch keine Spieler</div>
-              )}
-              {playerNames.map((name, index) => (
-                <div key={index} className="flex items-center gap-3 p-2 rounded-md border">
-                  <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-sm text-slate-700">{name.charAt(0).toUpperCase()}</div>
-                  <div className="text-sm font-medium">{name}</div>
-                </div>
-              ))}
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-full max-w-6xl px-6 py-12">
+          <div className="mb-12 text-center">
+            <h1 className="text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl">
+              Caesar&apos;s Gambit
+            </h1>
+            <p className="text-lg text-muted-foreground mt-4 font-medium uppercase tracking-[0.2em]">
+              Lobby #{roomId}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+            {/* Player List */}
+            <div className="flex flex-col gap-4">
+              <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-wider px-2">Spieler</h2>
+              <Item variant="outline" className="bg-card shadow-sm p-2">
+                <ItemGroup className="w-full">
+                  {playerNames.length === 0 && (
+                    <div className="p-8 text-center text-sm text-muted-foreground italic">Warten auf Spieler...</div>
+                  )}
+                  {playerNames.map((name, index) => (
+                    <Item key={index} className="border-none hover:bg-muted/50 transition-colors">
+                      <ItemMedia variant="icon" className="bg-primary/10 text-primary font-bold">
+                        {name.charAt(0).toUpperCase()}
+                      </ItemMedia>
+                      <ItemContent>
+                        <ItemTitle className="font-semibold">{name}</ItemTitle>
+                      </ItemContent>
+                    </Item>
+                  ))}
+                </ItemGroup>
+              </Item>
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-col items-center justify-center gap-6 py-8">
+              <div className="flex flex-col gap-3 w-full max-w-[240px]">
+                <Button variant="primary" size="lg" className="h-16 text-lg shadow-lg shadow-primary/20" disabled={playerNames.length < 2} onClick={handleStartGame}>
+                  Spiel starten
+                </Button>
+
+                <Button variant="default" onClick={handleShare}>
+                  {copied ? "Link kopiert!" : "Raumlink kopieren"}
+                </Button>
+
+                <Button variant="destructive" onClick={handleLeaveRoom}>
+                  Raum verlassen
+                </Button>
+              </div>
+            </div>
+
+            {/* Chat */}
+            <div className="flex flex-col gap-4">
+               <Item variant="outline" className="bg-card shadow-sm p-4 h-full min-h-[450px]">
+                 <Chat msg={chatMessages} roomId={roomId} />
+               </Item>
             </div>
           </div>
-        </aside>
-
-        <main className="col-span-1 self-center flex flex-col items-center">
-          <div className="flex flex-col gap-4 w-48">
-            <Button variant="primary" className="w-full" disabled={playerNames.length < 2} onClick={async() => {await startGame(Number(roomId)); onGameStart()}}>
-              Start
-            </Button>
-
-            <Button variant="default" className="w-full" onClick={handleShare}>
-              {copied ? "Kopiert!" : "Raumlink kopieren"}
-            </Button>
-
-            <Button variant="destructive" className="w-full" onClick={handleLeaveRoom}>
-              Raum verlassen
-            </Button>
-          </div>
-        </main>
-
-        <aside className="col-span-1 max-w-[20rem]">
-          <div className="bg-white border rounded-md p-3 shadow-sm">
-            <Chat msg={chatMessages} roomId={roomId} />
-          </div>
-        </aside>
-
         </div>
       </div>
-    </div>
+    );
 }

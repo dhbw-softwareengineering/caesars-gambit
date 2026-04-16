@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: "Strategic board game",
 };
 
+import { AppStateProvider } from "@/lib/AppStateContext";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,9 +30,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthGuard>
-          {children}
-        </AuthGuard>
+        <AppStateProvider>
+          <AuthGuard>
+            {children}
+          </AuthGuard>
+        </AppStateProvider>
       </body>
     </html>
   );

@@ -1,20 +1,23 @@
 "use client"
 
+import { apiRequest } from "./api";
+
 export async function signOut(): Promise<void> {
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
   try {
-    // attempt to notify backend (clears cookie if server uses cookies)
-    await fetch(`${apiBase}/api/auth/signout`, {
+    // attempt to notify backend
+    await apiRequest('/api/auth/signout', {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
     });
-  } catch {
+  } catch (error) {
     // ignore network errors - still remove client token
+    console.warn("Signout request failed", error);
   }
 
   try {
-    if (typeof window !== "undefined") localStorage.removeItem("accessToken");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("accessToken");
+    }
   } catch {
     // ignore
   }
