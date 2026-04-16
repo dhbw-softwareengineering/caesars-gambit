@@ -1,99 +1,65 @@
 "use client";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import { Lobby } from "@/components/Lobby";
 import GamePage from "@/components/game/GamePage";
-import { useRouter } from "next/navigation";
 import { useGetCurrentUser } from '@/components/api/getCurrentUser';
 import { DistributionDialog } from '@/components/game/DistributionDialog';
 import { distTroops } from "@/components/api/distTroops";
-
-import { API_BASE_URL } from "@/lib/api";
+import { useGameStore } from "@/lib/store";
+import { useGameEvents } from "@/hooks/useGameEvents";
 
 export default function RoomPage() {
   const params = useParams();
   const roomId = params.roomId as string;
-  const [playerNames, setPlayerNames] = useState<string[]>([]);
-  const [chatMessages, setChatMessages] = useState<{ username: string; message: string }[]>([]);
-  const [gameStarted, setGameStarted] = useState(false);
-  const [gameStateJson, setGameStateJson] = useState<string | null>(null);
-  const [pendingDistCount, setPendingDistCount] = useState<number | null>(null);
-  const [dialogTerritory, setDialogTerritory] = useState<string | null>(null);
   const router = useRouter();
   const currentUser = useGetCurrentUser();
+  
+  // Use global store
+  const { 
+    playerNames, 
+    chatMessages, 
+    gameStarted, 
+    gameState, 
+    pendingDistCount,
+    setPendingDistCount,
+    setGameStarted 
+  } = useGameStore();
 
-  function playerListUpdated(e: MessageEvent) {
-      const data: { username: string; host: boolean }[] = JSON.parse(e.data);
-      setPlayerNames(data.map(player => player.username));
-  }
+  // Initialize SSE events
+  useGameEvents(roomId);
 
-  useEffect(() => {
-    if (!roomId) return;
-
-    const token = localStorage.getItem("accessToken");
-
-    const url = `${API_BASE_URL}/api/game/stream/${roomId}?token=${encodeURIComponent(token!)}`;
-    const eventSource = new EventSource(url);
-
-
-    eventSource.addEventListener("init", (e: MessageEvent) => playerListUpdated(e));
-    eventSource.addEventListener("playerJoined", (e: MessageEvent) => playerListUpdated(e));
-    eventSource.addEventListener("playerLeft", (e: MessageEvent) => playerListUpdated(e));
-    eventSource.addEventListener("gameStarted", () => setGameStarted(true));
-    eventSource.addEventListener("gameStateUpdate", (e: MessageEvent) => setGameStateJson(e.data));
-    eventSource.addEventListener("askDistTroops", (e: MessageEvent) => {
-      const data: number = JSON.parse(e.data);
-      setPendingDistCount(data);
-    });
-
-    eventSource.addEventListener("chatMessage", (e: MessageEvent) => {
-      const data: { username: string; message: string } = JSON.parse(e.data);
-      setChatMessages((prev) => [...prev, data]); 
-    });
-
-    eventSource.onerror = (err) => {
-      console.error("SSE error", err);
-      eventSource.close();
-    };
-
-    return () => eventSource.close();
-  }, [roomId]);
+  const [dialogTerritory, setDialogTerritory] = useState<string | null>(null);
 
   async function onDistSubmit(territoryId: string) {
     if (pendingDistCount == null) return
 
     try {
-      const parsed = gameStateJson ? JSON.parse(gameStateJson) : []
-      const entry = parsed.find((e: Record<string, unknown>) => e.territory === territoryId)
-      const owner = (entry?.owner as string | null) || null
+      const territories = gameState?.territories || [];
+      const entry = territories.find((e) => e.territory === territoryId);
+      const owner = entry?.owner || null;
+      
       if (!currentUser || currentUser.username !== owner) {
-        return
+        return;
       }
     } catch (err) {
-      console.error('Fehler beim Prüfen des Besitzers:', err)
-      return
+      console.error('Fehler beim Prüfen des Besitzers:', err);
+      return;
     }
 
-    setDialogTerritory(territoryId)
+    setDialogTerritory(territoryId);
   }
 
   async function handleDialogConfirm(num: number) {
-    if (pendingDistCount == null || !dialogTerritory) return
+    if (pendingDistCount == null || !dialogTerritory) return;
 
     await distTroops(num, dialogTerritory, roomId!);
 
+    setPendingDistCount(
+      pendingDistCount - num > 0 ? pendingDistCount - num : null
+    );
 
-    setPendingDistCount((prev) => {
-      if (prev == null) return null
-      const remaining = prev - num
-      return remaining > 0 ? remaining : null
-    })
-
-    setDialogTerritory(null)
-  }
-
-  function handleGameStarted() {
-    setGameStarted(true);
+    setDialogTerritory(null);
   }
 
   return (
@@ -123,10 +89,21 @@ export default function RoomPage() {
             onCancel={() => setDialogTerritory(null)}
           />
 
-          <GamePage roomId={roomId!} gameStateJson={gameStateJson} pendingDistCount={pendingDistCount} onDistSubmit={onDistSubmit} />
+          <GamePage 
+            roomId={roomId!} 
+            gameStateJson={JSON.stringify(gameState?.territories || [])} 
+            pendingDistCount={pendingDistCount} 
+            onDistSubmit={onDistSubmit} 
+          />
         </>
       ) : (
-        <Lobby roomId={roomId!} playerNames={playerNames} chatMessages={chatMessages} onGameStart={() => handleGameStarted()} router={router} />
+        <Lobby 
+          roomId={roomId!} 
+          playerNames={playerNames} 
+          chatMessages={chatMessages} 
+          onGameStart={() => setGameStarted(true)} 
+          router={router} 
+        />
       )}    
     </>
   );

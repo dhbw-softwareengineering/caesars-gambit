@@ -7,16 +7,30 @@ import { Button } from "@/components/ui/button";
 import { Item } from "@/components/ui/item";
 import { SquareArrowOutUpRight } from "lucide-react";
 
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { apiRequest } from "@/lib/api";
 import { useAppState } from "@/lib/AppStateContext";
+import { AuthResponseDTO } from "@/types/api";
+
+const loginSchema = z.object({
+  email: z.string().email("Ungültige E-Mail-Adresse"),
+  password: z.string().min(1, "Passwort ist erforderlich"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const { setError, clearError, withLoading } = useAppState();
   const [message, setMessage] = useState<string | null>(null); 
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" }
+  });
 
   useEffect(() => {
     const queryMessage = searchParams.get("m");
@@ -28,14 +42,13 @@ function LoginForm() {
     }
   }, [searchParams, router]);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: LoginFormValues) => {
     clearError();
     try {
       await withLoading(async () => {
-        const data = await apiRequest<{ accessToken: string }>('/api/auth/login', {
+        const data = await apiRequest<AuthResponseDTO>('/api/auth/login', {
           method: "POST",
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify(values),
         });
         localStorage.setItem("accessToken", data.accessToken);
         router.push("/mainmenu");
@@ -53,23 +66,21 @@ function LoginForm() {
             {message}
           </div>
         )}
-        <form onSubmit={submit} className="flex flex-col gap-4 w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full">
           <h2 className="text-2xl font-semibold">Login</h2>
           <Input
             label="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             type="email"
-            required
+            error={errors.email?.message}
+            {...register("email")}
           />
           <Input
             label="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             placeholder="Your password"
             type="password"
-            required
+            error={errors.password?.message}
+            {...register("password")}
           />
           <div className="flex gap-2">
             <Button type="submit" className="cursor-pointer">Login</Button>

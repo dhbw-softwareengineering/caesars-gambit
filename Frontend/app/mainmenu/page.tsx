@@ -10,12 +10,14 @@ import signOut from "@/lib/auth";
 import { useAppState } from "@/lib/AppStateContext";
 
 import { Input } from "@/components/ui/input";
+import { useUser } from "@/components/api/getCurrentUser";
 
 export default function MainMenu() {
     const router = useRouter();
     const [showJoinInput, setShowJoinInput] = useState(false);
     const [roomId, setRoomId] = useState("");
     const { setError, withLoading } = useAppState();
+    const { data: user } = useUser();
     
     const PAYPAL_LINK = "https://paypal.me/YourHandle?locale.x=de_DE";
 
@@ -56,7 +58,7 @@ export default function MainMenu() {
                 <header className={styles.header}>
                     <h1 className={styles.title}>Caesar&apos;s Gambit</h1>
                     <p className={styles.paragraph}>
-                        Wähle eine Option, um zu beginnen.
+                        Willkommen zurück, <strong className="text-primary">{user?.username || "Imperator"}</strong>! Wähle eine Option, um zu beginnen.
                     </p>
                 </header>
 

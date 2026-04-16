@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 import { AppStateProvider } from "@/lib/AppStateContext";
+import { QueryProvider } from "@/lib/QueryProvider";
 
 export default function RootLayout({
   children,
@@ -30,11 +31,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppStateProvider>
-          <AuthGuard>
-            {children}
-          </AuthGuard>
-        </AppStateProvider>
+        <QueryProvider>
+          <AppStateProvider>
+            <AuthGuard>
+              {children}
+            </AuthGuard>
+          </AppStateProvider>
+        </QueryProvider>
       </body>
     </html>
   );

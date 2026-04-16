@@ -1,20 +1,18 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/api";
+import { UserDTO } from "@/types/api";
 
+export function useUser() {
+  return useQuery({
+    queryKey: ["currentUser"],
+    queryFn: () => apiRequest<UserDTO>("/api/user/currentUser"),
+    staleTime: 60 * 1000,
+    retry: false,
+  });
+}
+
+// Keep the old name for backward compatibility during migration
 export function useGetCurrentUser() {
-    const [data, setData] = useState<{username:string} | null>(null);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const userData = await apiRequest<{username:string}>('/api/user/currentUser');
-                setData(userData);
-            } catch (error) {
-                console.error('CurrentUser unavailable', error);
-            }
-        };
-        fetchData();
-    }, []);
-
-    return data;
+    const { data } = useUser();
+    return data || null;
 }
