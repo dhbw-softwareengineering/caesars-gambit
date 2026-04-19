@@ -12,7 +12,7 @@ export default function MainMenu() {
     const [showJoinInput, setShowJoinInput] = useState(false);
     const [roomId, setRoomId] = useState("");
     
-    const PAYPAL_LINK = " https://paypal.me/knoepsim/100";
+    const PAYPAL_LINK = "https://paypal.me/knoepsim/100";
 
 
     async function signOutAndRedirect() {
