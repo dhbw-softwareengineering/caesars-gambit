@@ -9,11 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 
 @Service
 public class AuthService {
@@ -45,15 +42,16 @@ public class AuthService {
         if (!passwordEncoder.matches(password, u.getPassword())) throw new RuntimeException("Invalid credentials");
         return jwtUtil.generateToken(u.getEmail(), u.getId());
     }
-
-      public long getUserIdFromToken(String token) {
-        return jwtUtil.getUserIdFromToken(token);
-      }
       
-    public User getUserIdFromAuth() {
+    public User getUserFromAuth() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            throw new AuthenticationCredentialsNotFoundException("Authentication required");
+        }
+
         String email = auth.getName();
-        return  userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
     }
     
 }

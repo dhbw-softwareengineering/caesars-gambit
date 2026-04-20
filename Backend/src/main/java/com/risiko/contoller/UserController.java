@@ -21,6 +21,6 @@ public class UserController {
 
     @GetMapping("/currentUser")
     public ResponseEntity<String> getCurrentUser() {
-        return ResponseEntity.ok("{\"username\": \"" + authService.getUserIdFromAuth().getUsername() + "\"}");
+        return ResponseEntity.ok("{\"username\": \"" + authService.getUserFromAuth().getUsername() + "\"}");
     }
 }

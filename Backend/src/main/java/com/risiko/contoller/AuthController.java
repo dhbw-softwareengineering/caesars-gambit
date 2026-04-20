@@ -28,7 +28,7 @@ public class AuthController {
     private void setTokenCookie(HttpServletResponse response, String token) {
         ResponseCookie cookie = ResponseCookie.from("accessToken", token)
                 .httpOnly(true)
-                .secure(false) // auf true setzen wenn HTTPS aktiv ist
+                .secure(false) 
                 .path("/")
                 .maxAge(3600)
                 .sameSite("Lax")
