@@ -37,34 +37,28 @@ public class RoomController {
 
     @PostMapping("/join/{roomId}")
     public void joinRoom(@PathVariable("roomId") int roomId, HttpServletRequest request, @RequestBody(required = false) Map<String, Object> body) {
-        String token = request.getHeader("Authorization").substring(7);
-        long userId = authService.getUserIdFromToken(token);
         boolean host = false;
         if (body != null && body.containsKey("host")) {
             Object hostObj = body.get("host");
             if (hostObj instanceof Boolean) host = (Boolean) hostObj;
             else host = Boolean.parseBoolean(hostObj.toString());
         }
-        if (!roomService.joinRoom(roomId, userId, host)) {
+        if (!roomService.joinRoom(roomId, authService.getUserIdFromAuth().getId(), host)) {
             throw new RuntimeException("Room not found");
         }
     }
     
     @PostMapping("/leave/{roomId}")
      public void leaveRoom(@PathVariable("roomId") int roomId, HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
-        long userId = authService.getUserIdFromToken(token);
-        if (!roomService.leaveRoom(roomId, userId)) {
+        if (!roomService.leaveRoom(roomId, authService.getUserIdFromAuth().getId())) {
             throw new RuntimeException("Room not found");
         }
     }
 
     @PostMapping("/message/{roomId}")
     public void sendMessage(@PathVariable("roomId") int roomId, HttpServletRequest request, @RequestBody Map<String, String> body) {
-        String token = request.getHeader("Authorization").substring(7);
-        long userId = authService.getUserIdFromToken(token);
         String message = body.get("message");
-        roomService.sendMessage(roomId, userId, message);
+        roomService.sendMessage(roomId, authService.getUserIdFromAuth().getId(), message);
     }
 
     @PostMapping("/start/{roomId}")

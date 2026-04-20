@@ -13,11 +13,7 @@ export async function signOut(): Promise<void> {
     // ignore network errors - still remove client token
   }
 
-  try {
-    if (typeof window !== "undefined") localStorage.removeItem("accessToken");
-  } catch {
-    // ignore
-  }
+  // Cookie wird vom Backend beim signout-Aufruf gelöscht (MaxAge=0)
 }
 
 export default signOut;

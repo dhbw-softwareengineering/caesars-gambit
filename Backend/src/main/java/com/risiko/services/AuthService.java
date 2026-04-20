@@ -3,9 +3,17 @@ package com.risiko.services;
 import com.risiko.model.User;
 import com.risiko.repository.UserRepository;
 import com.risiko.security.JwtUtil;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
 
 @Service
 public class AuthService {
@@ -38,7 +46,14 @@ public class AuthService {
         return jwtUtil.generateToken(u.getEmail(), u.getId());
     }
 
-    public long getUserIdFromToken(String token) {
+      public long getUserIdFromToken(String token) {
         return jwtUtil.getUserIdFromToken(token);
+      }
+      
+    public User getUserIdFromAuth() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        return  userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
     }
+    
 }
