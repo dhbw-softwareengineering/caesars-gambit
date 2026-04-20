@@ -1,14 +1,8 @@
 export async function distTroops(sum: number, to: string, roomId: string) {
-    const token = localStorage.getItem('accessToken');
-
-    if (!token) {
-        throw new Error('No access token found. Please login first.');
-    }
-
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/game/distTroops`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ to, sum, roomId }),

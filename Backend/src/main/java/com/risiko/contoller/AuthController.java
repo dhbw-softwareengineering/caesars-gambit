@@ -1,6 +1,8 @@
 package com.risiko.contoller;
 
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,21 +25,34 @@ public class AuthController {
     public static record RegisterReq(String username, String email, String password) {}
     public static record LoginReq(String email, String password) {}
 
+    private void setTokenCookie(HttpServletResponse response, String token) {
+        ResponseCookie cookie = ResponseCookie.from("accessToken", token)
+                .httpOnly(true)
+                .secure(false) // auf true setzen wenn HTTPS aktiv ist
+                .path("/")
+                .maxAge(3600)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterReq req) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterReq req, HttpServletResponse response) {
         try {
             String token = authService.register(req.username(), req.email(), req.password());
-            return ResponseEntity.ok(Map.of("accessToken", token));
+            setTokenCookie(response, token);
+            return ResponseEntity.ok(Map.of("message", "Registered successfully"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(409).body(Map.of("error", e.getMessage()));
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginReq req) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginReq req, HttpServletResponse response) {
         try {
             String token = authService.login(req.email(), req.password());
-            return ResponseEntity.ok(Map.of("accessToken", token));
+            setTokenCookie(response, token);
+            return ResponseEntity.ok(Map.of("message", "Login successful"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
         }
@@ -45,11 +60,14 @@ public class AuthController {
 
     @PostMapping("/signout")
     public ResponseEntity<?> signout(HttpServletRequest request, HttpServletResponse response) {
-    jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie("accessToken", "");
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setMaxAge(0);
-        response.addCookie(cookie);
+        ResponseCookie cookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         return ResponseEntity.ok(Map.of("message", "Signed out"));
     }
 }

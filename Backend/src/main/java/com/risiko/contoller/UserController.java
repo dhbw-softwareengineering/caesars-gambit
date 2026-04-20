@@ -5,28 +5,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.risiko.model.User;
-import com.risiko.repository.UserRepository;
 import com.risiko.services.AuthService;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
+    
+    private final AuthService authService;
+
 
     @Autowired
-    private AuthService authService;
-
-    @Autowired
-    private UserRepository userRepository;
+    public UserController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @GetMapping("/currentUser")
-    public ResponseEntity<String> getCurrentUser(HttpServletRequest request) {
-        String token = request.getHeader("Authorization").substring(7);
-        long userId = authService.getUserIdFromToken(token);
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok("{\"username\": \"" + user.getUsername() + "\"}");
+    public ResponseEntity<String> getCurrentUser() {
+        return ResponseEntity.ok("{\"username\": \"" + authService.getUserIdFromAuth().getUsername() + "\"}");
     }
 }
