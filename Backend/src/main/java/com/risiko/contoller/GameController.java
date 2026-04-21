@@ -30,16 +30,7 @@ public class GameController {
 
     @GetMapping("/stream/{roomId}")
     public SseEmitter stream(@PathVariable("roomId") String roomId, @RequestParam(value = "token", required = false) String tokenParam, HttpServletRequest request) {
-        String token = tokenParam;
-        if (token == null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
-            }
-        }
-        if (token == null) throw new RuntimeException("Missing token");
-        long userId = authService.getUserIdFromToken(token);
-        
+              
         Room room = roomService.getRoomById(Integer.parseInt(roomId));
         if (room == null) {
             throw new RuntimeException("Room not found");
@@ -48,7 +39,7 @@ public class GameController {
         SseEmitter emitter = new SseEmitter(0L);
         
         Player player = room.getPlayers().stream()
-            .filter(p -> userId == p.getUserId())
+            .filter(p -> authService.getUserFromAuth().getId() == p.getUserId())
             .findFirst()
             .orElseThrow(() -> new RuntimeException("Player not found in room"));
 
@@ -79,13 +70,11 @@ public class GameController {
     }
 
     @PostMapping("/distTroops")
-    public void distTroops(@RequestBody Map<String, Object> request, HttpServletRequest httpRequest) {
+    public void distTroops(@RequestBody Map<String, Object> request) {
         Room room = roomService.getRoomById(Integer.parseInt((String) request.get("roomId")));
-        String token = httpRequest.getHeader("Authorization").substring(7);
-        long userId = authService.getUserIdFromToken(token);
         String to = (String) request.get("to");
         int sum = ((Number) request.get("sum")).intValue();
-        room.getGamestate().getPlayerByUserId(userId).distTroops(Territorries.getTerritorryByDisplayName(to), sum);
+        room.getGamestate().getPlayerByUserId(authService.getUserFromAuth().getId()).distTroops(Territorries.getTerritorryByDisplayName(to), sum);
         room.getGamestate().sendGameStateUpdate();
     }
 

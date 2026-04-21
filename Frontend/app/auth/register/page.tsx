@@ -22,13 +22,13 @@ export default function RegisterPage() {
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/register`,
         {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, email, password }),
         }
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Register failed");
-      localStorage.setItem("accessToken", data.accessToken);
       router.push("/mainmenu");
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : String(e));

@@ -3,9 +3,14 @@ package com.risiko.services;
 import com.risiko.model.User;
 import com.risiko.repository.UserRepository;
 import com.risiko.security.JwtUtil;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 
 @Service
 public class AuthService {
@@ -37,8 +42,16 @@ public class AuthService {
         if (!passwordEncoder.matches(password, u.getPassword())) throw new RuntimeException("Invalid credentials");
         return jwtUtil.generateToken(u.getEmail(), u.getId());
     }
+      
+    public User getUserFromAuth() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-    public long getUserIdFromToken(String token) {
-        return jwtUtil.getUserIdFromToken(token);
+        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+            throw new AuthenticationCredentialsNotFoundException("Authentication required");
+        }
+
+        String email = auth.getName();
+        return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
     }
+    
 }

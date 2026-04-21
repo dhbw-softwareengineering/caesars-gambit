@@ -27,11 +27,10 @@ export default function RoomPage() {
   useEffect(() => {
     if (!roomId) return;
 
-    const token = localStorage.getItem("accessToken");
     const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-    const url = `${apiBase}/api/game/stream/${roomId}?token=${encodeURIComponent(token!)}`;
-    const eventSource = new EventSource(url);
+    const url = `${apiBase}/api/game/stream/${roomId}`;
+    const eventSource = new EventSource(url, { withCredentials: true });
 
     eventSource.addEventListener("init", (e: MessageEvent) => playerListUpdated(e));
     eventSource.addEventListener("playerJoined", (e: MessageEvent) => playerListUpdated(e));

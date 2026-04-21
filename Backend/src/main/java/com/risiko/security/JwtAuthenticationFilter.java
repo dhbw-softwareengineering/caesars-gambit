@@ -27,20 +27,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String token = null;
+
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            if (jwtUtil.validateToken(token)) {
-                String email = jwtUtil.getEmailFromToken(token);
-                var userOpt = userRepository.findByEmail(email);
-                if (userOpt.isPresent()) {
-                    var user = userOpt.get();
-                    var userDetails = new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), new ArrayList<>());
-                    var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                } else {
-                    throw new UsernameNotFoundException("User not found");
+            token = header.substring(7);
+        }
+
+        if (token == null && request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("accessToken".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
                 }
+            }
+        }
+
+        if (token != null && jwtUtil.validateToken(token)) {
+            String email = jwtUtil.getEmailFromToken(token);
+            var userOpt = userRepository.findByEmail(email);
+            if (userOpt.isPresent()) {
+                var user = userOpt.get();
+                var userDetails = new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), new ArrayList<>());
+                var auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            } else {
+                throw new UsernameNotFoundException("User not found");
             }
         }
         filterChain.doFilter(request, response);
