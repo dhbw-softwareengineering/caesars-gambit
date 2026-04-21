@@ -11,13 +11,8 @@ import com.risiko.services.AuthService;
 @RequestMapping("/api/user")
 public class UserController {
     
-    private final AuthService authService;
-
-
     @Autowired
-    public UserController(AuthService authService) {
-        this.authService = authService;
-    }
+    private AuthService authService;
 
     @GetMapping("/currentUser")
     public ResponseEntity<String> getCurrentUser() {
