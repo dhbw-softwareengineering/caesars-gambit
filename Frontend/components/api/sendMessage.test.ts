@@ -1,0 +1,39 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import type { Mock } from 'vitest'
+import { sendMessage } from './sendMessage'
+
+
+describe('sendMessage', () => {
+  beforeEach(() => {
+    global.fetch = vi.fn() as Mock
+  })
+
+  it('should succeed with valid message', async () => {
+    ;(global.fetch as Mock).mockResolvedValueOnce({ ok: true })
+
+    await expect(sendMessage(123, 'Hello')).resolves.toBeUndefined()
+  })
+
+  it('should throw error on failed send', async () => {
+    ;(global.fetch as Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+    })
+
+    await expect(sendMessage(123, 'Hello')).rejects.toThrow('Failed to send message')
+  })
+
+  it('should send message with correct body and URL', async () => {
+    ;(global.fetch as Mock).mockResolvedValueOnce({ ok: true })
+
+    await sendMessage(789, 'Test message')
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      'http://localhost:8080/api/rooms/message/789',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ message: 'Test message' }),
+      })
+    )
+  })
+})
