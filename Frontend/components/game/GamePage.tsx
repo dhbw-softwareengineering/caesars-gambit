@@ -5,6 +5,8 @@ import { DistributionDialog } from './DistributionDialog'
 import { getColorForOwner, useOwnerColorMap } from '@/lib/useOwnerColorMap'
 import { distTroops } from '../api/distTroops'
 import { useGetCurrentUser } from '../api/getCurrentUser'
+import { moveTroops } from '../api/moveTroops'
+import { attack } from '../api/attack'
 
 type GamePageProps = {
     roomId: string
@@ -25,6 +27,11 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount = nul
     const [regionClicked, setRegionClicked] = useState<string | null>(null)
     const [dialogTerritory, setDialogTerritory] = useState<string | null>(null);
     const [territories, setTerritories] = useState<TerritoryData[]>([])
+    const [moveDialog, setMoveDialog] = useState(false)
+    const [moveTroopsCount, setMoveTroopsCount] = useState<number | null>(null)
+    const [moveFrom, setMoveFrom] = useState<string | null>(null)
+    const [moveTo, setMoveTo] = useState<string | null>(null)
+    const [attackDialog, setAttackDialog] = useState(false)
     const ownerColorMap = useOwnerColorMap(territories)
     const currentUser = useGetCurrentUser()
 
@@ -44,6 +51,11 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount = nul
     function territoryOwnedByCurrentUser(territoryId: string): boolean {
         const territory = territories.find((t) => t.territory === territoryId)
         return territory?.owner === currentUser?.username
+    }
+
+    function territoryTroopCount(territoryId: string): number {
+        const territory = territories.find((t) => t.territory === territoryId)
+        return territory ? territory.troops : 0
     }
 
     function onDistSubmit(territoryId: string) {
@@ -70,6 +82,18 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount = nul
         setDialogTerritory(null)
     }
 
+    async function handleMoveConfirm(num: number) {
+        setMoveDialog(false)
+        await moveTroops(num, moveFrom!, moveTo!, roomId!);
+    }
+
+    async function handleAttackConfirm(num: number) {
+        setAttackDialog(false)
+        await attack(num, moveFrom!, moveTo!, roomId!);
+        
+    }
+
+
     function handleRegionClick(regionId: string) {
         if (!regionClicked && !territoryOwnedByCurrentUser(regionId)) {
             console.log("Hier einbauen, dass nicht eigenes Gebiert ist")
@@ -86,11 +110,17 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount = nul
         }
         if (regionClicked) {
             if (territoryOwnedByCurrentUser(regionId)) {
-                console.log("Hier Dialog aufrufen wie viele dahin verschoben werden sollen")
+                setMoveDialog(true)
+                setMoveTroopsCount(territoryTroopCount(regionClicked) - 1)
+                setMoveTo(regionId)
+                setMoveFrom(regionClicked)
                 setRegionClicked(null)
                 return;
             } else {
-                console.log("Hier einbauen dass angegriffen wird")
+                setAttackDialog(true)
+                setMoveTroopsCount(territoryTroopCount(regionClicked) - 1)
+                setMoveTo(regionId)
+                setMoveFrom(regionClicked)
                 setRegionClicked(null)
                 return;
             }
@@ -140,11 +170,13 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount = nul
                 </div>
             </div>
             <DistributionDialog
-                isOpen={dialogTerritory != null}
-                territoryName={dialogTerritory || ''}
-                availableTroops={pendingDistCount || 0}
-                onConfirm={handleDialogConfirm}
-                onCancel={() => setDialogTerritory(null)}
+                isOpen={dialogTerritory != null || moveDialog || attackDialog}
+                territoryName={moveDialog ?  "Truppen hierhin verschieben " + moveTo  : attackDialog ? "Truppen angreifen " + moveTo : dialogTerritory || ""}
+                availableTroops={(moveDialog || attackDialog) ? moveTroopsCount || 0 : pendingDistCount || 0}
+                onConfirm={moveDialog ? handleMoveConfirm : attackDialog ? handleAttackConfirm : handleDialogConfirm}
+                onCancel={() => {setDialogTerritory(null); setMoveDialog(false); setAttackDialog(false)} }
+                moveDialog={moveDialog}
+                attackDialog={attackDialog}
             />
         </div>
 

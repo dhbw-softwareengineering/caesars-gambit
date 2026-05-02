@@ -60,16 +60,18 @@ public class GameController {
         return emitter;
     }
 
-    @PostMapping("/Move")
-    public void move(@RequestParam String from, @RequestParam String to, @RequestParam int sum, @RequestParam String roomId) {
-        Room room = roomService.getRoomById(Integer.parseInt(roomId));
-        room.getGamestate().getCurrentPlayer().moveTroops(from, to, sum);
+    @PostMapping("/move")
+    public void move(@RequestBody Map<String, Object> request) {
+        Room room = roomService.getRoomById(Integer.parseInt(request.get("roomId").toString()));
+        room.getGamestate().getCurrentPlayer().moveTroops(Territorries.getTerritorryByDisplayName((String) request.get("from")), Territorries.getTerritorryByDisplayName((String) request.get("to")), (Integer) request.get("sum"));
+        room.getGamestate().sendGameStateUpdate();
     }
-
+                    
     @PostMapping("/attack")
-    public void attack(@RequestParam String from, @RequestParam String to, @RequestParam String roomId) {
-        Room room = roomService.getRoomById(Integer.parseInt(roomId));
-        room.getGamestate().attack(from, to);
+    public void attack(@RequestBody Map<String, Object> request) {
+        Room room = roomService.getRoomById(Integer.parseInt(request.get("roomId").toString()));
+        room.getGamestate().attack(Territorries.getTerritorryByDisplayName((String) request.get("from")), Territorries.getTerritorryByDisplayName((String) request.get("to")), (Integer) request.get("sum"));
+        room.getGamestate().sendGameStateUpdate();
     }
 
     @PostMapping("/distTroops")

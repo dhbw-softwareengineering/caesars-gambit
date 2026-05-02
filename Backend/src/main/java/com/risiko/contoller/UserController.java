@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.risiko.model.User;
 import com.risiko.model.dto.UserDto;
-import com.risiko.repository.UserRepository;
 import com.risiko.services.AuthService;
 
 @RestController
@@ -19,7 +18,8 @@ public class UserController {
     private AuthService authService;
 
     @GetMapping("/currentUser")
-    public ResponseEntity<String> getCurrentUser() {
+    public ResponseEntity<UserDto> getCurrentUser() {
+        User user = authService.getUserFromAuth();
         return ResponseEntity.ok(new UserDto(user.getUsername()));
     }
 }
