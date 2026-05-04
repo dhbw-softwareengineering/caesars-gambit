@@ -11,8 +11,8 @@ import { attack } from '../api/attack'
 type GamePageProps = {
     roomId: string
     gameStateJson: string | null
-    setPendingDistCount: (count: number) => void
-    pendingDistCount?: number | null
+    setPendingDistCount: React.Dispatch<React.SetStateAction<number | null>>
+    pendingDistCount: number | null
     playerNames: string[]
     chatMessages: { username: string; message: string }[]
 }
@@ -23,7 +23,7 @@ type TerritoryData = {
     troops: number
 }
 
-export default function GamePage({ roomId, gameStateJson, pendingDistCount = null, playerNames, chatMessages, setPendingDistCount }: GamePageProps) {
+export default function GamePage({ roomId, gameStateJson, pendingDistCount, playerNames, chatMessages, setPendingDistCount }: GamePageProps) {
     const [regionClicked, setRegionClicked] = useState<string | null>(null)
     const [dialogTerritory, setDialogTerritory] = useState<string | null>(null);
     const [territories, setTerritories] = useState<TerritoryData[]>([])
@@ -41,6 +41,7 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount = nul
         try {
             const parsed = JSON.parse(gameStateJson)
             if (Array.isArray(parsed)) {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setTerritories(parsed)
             }
         } catch (err) {
@@ -73,10 +74,9 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount = nul
 
         await distTroops(num, dialogTerritory, roomId!);
 
-
-        setPendingDistCount((prev) => {
-            const remaining = prev - num
-            return remaining > 0 ? remaining : null
+        setPendingDistCount((prev: number | null) => {
+            const remaining = prev !== null ? prev - num : null
+            return remaining !== null ? remaining > 0 ? remaining : null : null
         })
 
         setDialogTerritory(null)

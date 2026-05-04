@@ -24,6 +24,7 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (searchParams.get("started") === "true") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setGameStarted(true);
     }
   }, [searchParams]);
