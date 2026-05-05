@@ -32,23 +32,23 @@ public class Player {
     }
 
     public java.util.Map<Territorries, Integer> getTerritories() {
-        return territories == null ? Collections.emptyMap() : Collections.unmodifiableMap(territories);
+        return territories == null ? Collections.emptyMap() : territories;
     }
 
     public void distTroops(Territorries territory, int sum) {
         territories.put(territory, territories.get(territory) + sum);
     }
 
-    public void moveTroops(String from, String to, int sum) {
-        territories.put(Territorries.valueOf(from), territories.get(Territorries.valueOf(from)) - sum);
-        territories.put(Territorries.valueOf(to), territories.get(Territorries.valueOf(to)) + sum);
+    public void moveTroops(Territorries from, Territorries to, int sum) {
+        territories.put(from, territories.get(from) - sum);
+        territories.put(to, territories.get(to) + sum);
     }
 
     public boolean hasTerritory(Territorries territory) {
         return territories.containsKey(territory);
     }
 
-    public int defend(String territory, int lostTroops) {
+    public int defend(Territorries territory, int lostTroops) {
         if(territories.get(territory) <= lostTroops) {
             territories.remove(territory);
             return 0;
@@ -56,8 +56,8 @@ public class Player {
         return territories.get(territory) - lostTroops;
     }
 
-    public void getTerritory(String territory) {
-        territories.put(Territorries.valueOf(territory), 0);
+    public void getTerritory(Territorries territory) {
+        territories.put(territory, 0);
     }
 
     public void askDistTroops(int sum) {

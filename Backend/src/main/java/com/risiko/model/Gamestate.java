@@ -11,13 +11,13 @@ import java.util.stream.Collectors;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.risiko.contoller.GameController;
+import com.risiko.model.dto.TerritoryStateDto;
 
 public class Gamestate {
     private final List<Player> players;
     private static final int INITIAL_TROOPS = 40;
     private Player currentPlayer;
     private final GameController gameController;
-
 
     public Gamestate(int roomId, List<Player> players, GameController gameController) {
         this.players = players;
@@ -32,9 +32,8 @@ public class Gamestate {
         List<List<Territorries>> distributedTerritories = new ArrayList<>();
         for (int i = 0; i < players.size(); i++) {
             List<Territorries> playerTerritories = territoryList.subList(
-                i * territoriesPerPlayer, 
-                (i + 1) * territoriesPerPlayer
-            );
+                    i * territoriesPerPlayer,
+                    (i + 1) * territoriesPerPlayer);
             distributedTerritories.add(playerTerritories);
         }
         int remaining = territoryList.size() % players.size();
@@ -49,13 +48,12 @@ public class Gamestate {
             players.get(i).askDistTroops(INITIAL_TROOPS);
         }
         gameController.broadcastEvent(
-            players.stream()
-                .map(p -> p.emitter)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList()),
-            "gameStarted",
-            "The game has started!"
-        );
+                players.stream()
+                        .map(p -> p.emitter)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()),
+                "gameStarted",
+                "The game has started!");
         currentPlayer = players.get(0);
         nextMove();
     }
@@ -63,9 +61,9 @@ public class Gamestate {
     public void nextMove() {
         sendGameStateUpdate();
         List<SseEmitter> emitters = players.stream()
-            .map(p -> p.emitter)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
+                .map(p -> p.emitter)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
         gameController.broadcastEvent(emitters, "currentPlayer", currentPlayer.username);
     }
 
@@ -76,40 +74,41 @@ public class Gamestate {
         nextMove();
     }
 
-
-    public void attack(String fromTerritory, String toTerritory) {
+    public void attack(Territorries fromTerritory, Territorries toTerritory, int sum) {
         for (Player p : players) {
-            if (p.hasTerritory(Territorries.valueOf(toTerritory))) {
-                List<Integer> attackerRolls = dice(3, 2); //TODO: wie viel truppen angreifen
-                List<Integer> defenderRolls = dice(2, 2); //TODO
+            if (p.hasTerritory(toTerritory)) {
+                List<Integer> attackerRolls = dice(sum, 2); // TODO: wie viele Truppen verteidigen
+                List<Integer> defenderRolls = dice(2, 2); // TODO
                 int comparisons = Math.min(attackerRolls.size(), defenderRolls.size());
+                int lostTroopsDefence = 0;
+                int lostTroopsAttack = 0;
                 for (int i = 0; i < comparisons; i++) {
-                    int lostTroopsDefence = 0;
-                    int lostTroopsAttack = 0;
                     if (attackerRolls.get(i) > defenderRolls.get(i)) {
                         lostTroopsDefence++;
                     } else {
                         lostTroopsAttack++;
                     }
-                    if (p.defend(toTerritory, lostTroopsDefence) == 0) {
-                        currentPlayer.getTerritory(toTerritory);
-                        currentPlayer.distTroops(Territorries.getTerritorryByDisplayName(fromTerritory), -lostTroopsAttack);
-                        List<SseEmitter> emitters = new ArrayList<>();
-                        emitters.add(currentPlayer.emitter);
-                        gameController.broadcastEvent(emitters, "askDistTroops", toTerritory);
-                    }
-                    
+                }
+                if (p.defend(toTerritory, lostTroopsDefence) == 0) {
+                    currentPlayer.getTerritory(toTerritory);
+                    currentPlayer.distTroops(fromTerritory, -lostTroopsAttack);
+                    List<SseEmitter> emitters = new ArrayList<>();
+                    emitters.add(currentPlayer.emitter);
+                    gameController.broadcastEvent(emitters, "askDistTroops", toTerritory);
+                } else {
+                    p.getTerritories().put(toTerritory, p.getTerritories().get(toTerritory) - lostTroopsDefence);
+                    currentPlayer.getTerritories().put(fromTerritory, currentPlayer.getTerritories().get(fromTerritory) - lostTroopsAttack);
                 }
             }
         }
+
         gameController.broadcastEvent(
-            players.stream()
-                .map(pl -> pl.emitter)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList()),
-            "attackResult",
-            "Attack from " + fromTerritory + " to " + toTerritory + " completed."
-        );
+                players.stream()
+                        .map(pl -> pl.emitter)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()),
+                "attackResult",
+                "Attack from " + fromTerritory + " to " + toTerritory + " completed.");
     }
 
     public static List<Integer> dice(int rollCount, int returnCount) {
@@ -134,12 +133,9 @@ public class Gamestate {
     }
 
     public void sendGameStateUpdate() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
+        List<TerritoryStateDto> state = new ArrayList<>();
         Territorries[] all = Territorries.values();
-        for (int i = 0; i < all.length; i++) {
-            Territorries t = all[i];
-            if (i > 0) sb.append(',');
+        for (Territorries t : all) {
             String display = t.getDisplayName();
             String owner = null;
             int troops = 0;
@@ -152,33 +148,14 @@ public class Gamestate {
                     break;
                 }
             }
-            sb.append('{');
-            sb.append("\"territory\":\"").append(jsonEscape(display)).append('\"').append(',');
-            sb.append("\"owner\":");
-            if (owner == null) {
-                sb.append("null");
-            } else {
-                sb.append('"').append(jsonEscape(owner)).append('"');
-            }
-            sb.append(',');
-            sb.append("\"troops\":").append(troops);
-            sb.append('}');
+            state.add(new TerritoryStateDto(display, owner, troops));
         }
-        sb.append("]");
-        String gameState = sb.toString();
-
         List<SseEmitter> emitters = players.stream()
-            .map(p -> p.emitter)
-            .filter(Objects::nonNull)
-            .collect(Collectors.toList());
-        gameController.broadcastEvent(emitters, "gameStateUpdate", gameState);
+                .map(p -> p.emitter)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        gameController.broadcastEvent(emitters, "gameStateUpdate", state);
     }
-
-    private static String jsonEscape(String s) {
-        if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
-    }
-
 
     public Player getPlayerByUserId(long userId) {
         for (Player p : players) {

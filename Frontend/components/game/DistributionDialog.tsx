@@ -7,6 +7,8 @@ interface DistributionDialogProps {
     availableTroops: number
     onConfirm: (count: number) => void
     onCancel: () => void
+    moveDialog: boolean
+    attackDialog: boolean
 }
 
 export const DistributionDialog: React.FC<DistributionDialogProps> = ({
@@ -15,6 +17,8 @@ export const DistributionDialog: React.FC<DistributionDialogProps> = ({
     availableTroops,
     onConfirm,
     onCancel,
+    moveDialog,
+    attackDialog
 }) => {
     const [count, setCount] = useState(1)
 
@@ -51,7 +55,7 @@ export const DistributionDialog: React.FC<DistributionDialogProps> = ({
                 className="rounded-lg border border-[rgba(59,130,246,0.25)] bg-[#0b1220] p-6 shadow-lg text-white max-w-sm"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h2 className="text-lg font-bold mb-2">Truppen verteilen</h2>
+                <h2 className="text-lg font-bold mb-2">{moveDialog ?  "Truppen verschieben" : attackDialog ? "Truppen angreifen" : "Truppen verteilen"}</h2>
                 <p className="text-sm text-[rgba(189,215,255,0.85)] mb-4">
                     Gebiet: <strong>{territoryName}</strong>
                 </p>

@@ -9,18 +9,15 @@ const KARTE_FABIG_PATH = '/assets/Karte-fabig.jpg'
 export interface GameCardProps {
     onRegionClick?: (regionId: string) => void
     gameStateJson?: string | null
-    onTerritoryButtonClick?: (regionId: string) => void
 }
 
-export default function GameCard({ onRegionClick, gameStateJson, onTerritoryButtonClick }: GameCardProps) {
-    // direkter DOM-Zugang, um später innerHTML = svgText zu setzen
+export default function GameCard({ onRegionClick, gameStateJson }: GameCardProps) {
     const svgContainerRef = useRef<HTMLDivElement | null>(null)
 
     useEffect(() => {
         const container = svgContainerRef.current
         if (!container) return
 
-        // fetch SVG von public/assets
         fetch(KARTE_SVG_PATH)
             .then((res) => res.text())
             .then((svgText) => {
@@ -32,7 +29,6 @@ export default function GameCard({ onRegionClick, gameStateJson, onTerritoryButt
                 svg.setAttribute('width', '100%')
                 svg.setAttribute('height', '100%')
                 svg.style.display = 'block'
-                // make the base SVG invisible but keep it interactive
                 svg.style.opacity = '0'
                 svg.style.pointerEvents = 'auto'
 
@@ -41,7 +37,6 @@ export default function GameCard({ onRegionClick, gameStateJson, onTerritoryButt
 
                 regions.forEach((region) => {
                     region.style.cursor = 'pointer'
-                    // ensure each region receives pointer events even when parent svg is invisible
                     region.style.pointerEvents = 'auto'
 
                     const clickHandler = () => {
@@ -74,12 +69,13 @@ export default function GameCard({ onRegionClick, gameStateJson, onTerritoryButt
                     alt="Spielkarte"
                     className={styles.mapBg}
                     priority
-                    width={1200}
-                    height={800}
+                    width={2400}
+                    height={1600}
+                    style={{ width: '100%', height: '100%' }}
                 />
 
                 <div ref={svgContainerRef} className={styles.mapSvgContainer} />
-                <TerritoryLabels gameStateJson={gameStateJson || null} onTerritoryButtonClick={onTerritoryButtonClick} />
+                <TerritoryLabels gameStateJson={gameStateJson || null} onTerritoryButtonClick={onRegionClick}  />
             </div>
         </>
     )
