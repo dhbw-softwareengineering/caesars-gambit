@@ -72,6 +72,20 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- In-Memory Database für Tests -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- JSON Web Tokens -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
