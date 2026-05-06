@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -86,10 +87,13 @@ class RoomControllerTest {
             when(authService.getUserFromAuth()).thenReturn(user);
             when(roomService.joinRoom(anyInt(), anyLong(), anyBoolean())).thenReturn(false);
 
-            assertThrows(Exception.class, () ->
+            Exception thrown = assertThrows(Exception.class, () ->
                     mockMvc.perform(post("/api/rooms/join/99")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}")));
+
+            assertThat(thrown.getCause()).isInstanceOf(RuntimeException.class)
+                    .hasMessage("Room not found");
         }
 
         @Test
@@ -129,8 +133,11 @@ class RoomControllerTest {
             when(authService.getUserFromAuth()).thenReturn(user);
             when(roomService.leaveRoom(anyInt(), anyLong())).thenReturn(false);
 
-            assertThrows(Exception.class, () ->
+            Exception thrown = assertThrows(Exception.class, () ->
                     mockMvc.perform(post("/api/rooms/leave/99")));
+
+            assertThat(thrown.getCause()).isInstanceOf(RuntimeException.class)
+                    .hasMessage("Room not found");
         }
     }
 
@@ -149,6 +156,23 @@ class RoomControllerTest {
                     .andExpect(status().isOk());
 
             verify(roomService).sendMessage(1, 1L, "Hello");
+        }
+
+        @Test
+        void userNichtImRaum_wirftException() {
+            User user = new User();
+            user.setId(1L);
+            when(authService.getUserFromAuth()).thenReturn(user);
+            doThrow(new IllegalArgumentException("User not in room"))
+                    .when(roomService).sendMessage(anyInt(), anyLong(), anyString());
+
+            Exception thrown = assertThrows(Exception.class, () ->
+                    mockMvc.perform(post("/api/rooms/message/1")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(Map.of("message", "Hello")))));
+
+            assertThat(thrown.getCause()).isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("User not in room");
         }
     }
 

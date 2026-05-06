@@ -13,7 +13,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
@@ -135,15 +138,58 @@ class RoomTest {
 
         @Test
         void bereitsGestartet_wirftException() {
-            // Direkt gameStarted über endGame-Umkehrung simulieren ist nicht möglich,
-            // daher testen wir über zweimaligen Aufruf von startGame
-            // Erster Aufruf schlägt fehl weil keine Spieler → wir testen den IllegalStateException-Pfad
-            // indem wir das Flag manuell über endGame+startGame setzen ist nicht möglich ohne Spieler.
-            // Stattdessen: endGame setzt auf false, startGame mit 0 Spielern würde NPE werfen.
-            // Wir testen nur den Guard direkt: zweimal starten nach erstem erfolgreichen Start.
-            // Da start() Spieler benötigt, testen wir nur den Guard-Pfad isoliert über Reflection.
-            room.endGame(); // Sicherstellen: nicht gestartet
-            assertThat(room.isGameStarted()).isFalse();
+            ReflectionTestUtils.setField(room, "gameStarted", true);
+
+            assertThatThrownBy(() -> room.startGame())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("Game already started");
+        }
+    }
+
+    @Nested
+    class LeaveRoom {
+
+        @Test
+        void spielerWirdAusListeEntfernt() {
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            room.joinRoom(1L, false);
+
+            room.leaveRoom(1L);
+
+            assertThat(room.getPlayers()).isEmpty();
+        }
+
+        @Test
+        void andererSpielerBleibtInListe() {
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            when(userRepository.findById(2L)).thenReturn(Optional.empty());
+            room.joinRoom(1L, false);
+            room.joinRoom(2L, false);
+
+            room.leaveRoom(1L);
+
+            assertThat(room.getPlayers()).hasSize(1);
+            assertThat(room.getPlayers().get(0).getUserId()).isEqualTo(2L);
+        }
+    }
+
+    @Nested
+    class SendMessage {
+
+        @Test
+        void userNichtImRaum_wirftException() {
+            assertThatThrownBy(() -> room.sendMessage(99L, "Hallo"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("User not in room");
+        }
+
+        @Test
+        void userImRaum_wirftKeineException() {
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+            room.joinRoom(1L, false);
+
+            assertThatCode(() -> room.sendMessage(1L, "Hallo"))
+                    .doesNotThrowAnyException();
         }
     }
 }

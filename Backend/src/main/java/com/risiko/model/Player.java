@@ -53,7 +53,9 @@ public class Player {
             territories.remove(territory);
             return 0;
         }
-        return territories.get(territory) - lostTroops;
+        int remaining = territories.get(territory) - lostTroops;
+        territories.put(territory, remaining);
+        return remaining;
     }
 
     public void getTerritory(Territorries territory) {

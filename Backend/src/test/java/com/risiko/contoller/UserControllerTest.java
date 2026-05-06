@@ -3,6 +3,7 @@ package com.risiko.contoller;
 import com.risiko.model.User;
 import com.risiko.services.AuthService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -11,6 +12,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -44,10 +46,13 @@ class UserControllerTest {
     }
 
     @Test
-    void nichtAuthentifiziert_wirftException() {
+    void nichtAuthentifiziert_gibt500Zurueck() throws Exception {
         when(authService.getUserFromAuth()).thenThrow(new RuntimeException("Authentication required"));
 
-        assertThrows(Exception.class, () ->
+        Exception thrown = assertThrows(Exception.class, () ->
                 mockMvc.perform(get("/api/user/currentUser")));
+
+        assertThat(thrown.getCause()).isInstanceOf(RuntimeException.class)
+                .hasMessage("Authentication required");
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -73,6 +74,19 @@ class GameControllerTest {
             verify(player).moveTroops(any(), any(), eq(3));
             verify(gamestate).sendGameStateUpdate();
         }
+
+        @Test
+        void raumNichtGefunden_wirftNullPointerException() {
+            when(roomService.getRoomById(99)).thenReturn(null);
+
+            Exception thrown = assertThrows(Exception.class, () ->
+                    mockMvc.perform(post("/api/game/move")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    Map.of("roomId", 99, "from", "Palatin", "to", "Laterano", "sum", 3)))));
+
+            assertThat(thrown.getCause()).isInstanceOf(NullPointerException.class);
+        }
     }
 
     @Nested
@@ -91,6 +105,19 @@ class GameControllerTest {
 
             verify(gamestate).attack(any(), any(), eq(2));
             verify(gamestate).sendGameStateUpdate();
+        }
+
+        @Test
+        void raumNichtGefunden_wirftNullPointerException() {
+            when(roomService.getRoomById(99)).thenReturn(null);
+
+            Exception thrown = assertThrows(Exception.class, () ->
+                    mockMvc.perform(post("/api/game/attack")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    Map.of("roomId", 99, "from", "Palatin", "to", "Laterano", "sum", 2)))));
+
+            assertThat(thrown.getCause()).isInstanceOf(NullPointerException.class);
         }
     }
 
@@ -124,8 +151,11 @@ class GameControllerTest {
         void raumNichtGefunden_wirftException() {
             when(roomService.getRoomById(99)).thenReturn(null);
 
-            assertThrows(Exception.class, () ->
+            Exception thrown = assertThrows(Exception.class, () ->
                     mockMvc.perform(get("/api/game/stream/99")));
+
+            assertThat(thrown.getCause()).isInstanceOf(RuntimeException.class)
+                    .hasMessage("Room not found");
         }
     }
 }

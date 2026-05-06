@@ -21,6 +21,12 @@ class GamestateTest {
     @Mock
     private GameController gameController;
 
+    private Player makePlayer(long id) {
+        UserRepository userRepo = mock(UserRepository.class);
+        when(userRepo.findById(id)).thenReturn(Optional.empty());
+        return new Player(id, userRepo);
+    }
+
     @Nested
     class Dice {
 
@@ -73,6 +79,11 @@ class GamestateTest {
         void negativerRollCount_gibtLeereListeZurueck() {
             assertThat(Gamestate.dice(-1, 2)).isEmpty();
         }
+
+        @Test
+        void negativerReturnCount_gibtLeereListeZurueck() {
+            assertThat(Gamestate.dice(3, -1)).isEmpty();
+        }
     }
 
     @Nested
@@ -80,9 +91,7 @@ class GamestateTest {
 
         @Test
         void vorhandenerSpieler_gibtSpielerZurueck() {
-            UserRepository userRepo = mock(UserRepository.class);
-            when(userRepo.findById(1L)).thenReturn(Optional.empty());
-            Player player = new Player(1L, userRepo);
+            Player player = makePlayer(1L);
             Gamestate gamestate = new Gamestate(1, List.of(player), gameController);
 
             assertThat(gamestate.getPlayerByUserId(1L)).isEqualTo(player);
@@ -90,9 +99,7 @@ class GamestateTest {
 
         @Test
         void nichtVorhandenerSpieler_gibtNullZurueck() {
-            UserRepository userRepo = mock(UserRepository.class);
-            when(userRepo.findById(1L)).thenReturn(Optional.empty());
-            Player player = new Player(1L, userRepo);
+            Player player = makePlayer(1L);
             Gamestate gamestate = new Gamestate(1, List.of(player), gameController);
 
             assertThat(gamestate.getPlayerByUserId(99L)).isNull();
@@ -109,26 +116,12 @@ class GamestateTest {
     @Nested
     class EndMove {
 
-        private Player makePlayer(long id) {
-            UserRepository userRepo = mock(UserRepository.class);
-            when(userRepo.findById(id)).thenReturn(Optional.empty());
-            return new Player(id, userRepo);
-        }
-
         @Test
         void wechseltZumNaechstenSpieler() {
-            UserRepository repo1 = mock(UserRepository.class);
-            UserRepository repo2 = mock(UserRepository.class);
-            when(repo1.findById(1L)).thenReturn(Optional.empty());
-            when(repo2.findById(2L)).thenReturn(Optional.empty());
-            Player p1 = new Player(1L, repo1);
-            Player p2 = new Player(2L, repo2);
-
-            // Mutable list required for Gamestate shuffle
+            Player p1 = makePlayer(1L);
+            Player p2 = makePlayer(2L);
             java.util.List<Player> players = new java.util.ArrayList<>(List.of(p1, p2));
             Gamestate gamestate = new Gamestate(1, players, gameController);
-
-            // Manuell currentPlayer auf p1 setzen via Reflection
             org.springframework.test.util.ReflectionTestUtils.setField(gamestate, "currentPlayer", p1);
 
             gamestate.endMove();
@@ -138,17 +131,10 @@ class GamestateTest {
 
         @Test
         void letzterSpieler_wechseltZumErstenSpieler() {
-            UserRepository repo1 = mock(UserRepository.class);
-            UserRepository repo2 = mock(UserRepository.class);
-            when(repo1.findById(1L)).thenReturn(Optional.empty());
-            when(repo2.findById(2L)).thenReturn(Optional.empty());
-            Player p1 = new Player(1L, repo1);
-            Player p2 = new Player(2L, repo2);
-
+            Player p1 = makePlayer(1L);
+            Player p2 = makePlayer(2L);
             java.util.List<Player> players = new java.util.ArrayList<>(List.of(p1, p2));
             Gamestate gamestate = new Gamestate(1, players, gameController);
-
-            // Letzten Spieler als aktuellen setzen
             org.springframework.test.util.ReflectionTestUtils.setField(gamestate, "currentPlayer", p2);
 
             gamestate.endMove();

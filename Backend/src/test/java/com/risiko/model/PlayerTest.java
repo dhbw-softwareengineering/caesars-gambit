@@ -142,6 +142,7 @@ class PlayerTest {
 
             assertThat(result).isEqualTo(2);
             assertThat(player.hasTerritory(Territorries.PALATIN)).isTrue();
+            assertThat(player.getTerritories().get(Territorries.PALATIN)).isEqualTo(2);
         }
 
         @Test
@@ -170,6 +171,51 @@ class PlayerTest {
             player.getTerritory(Territorries.EICHENWALD);
 
             assertThat(player.getTerritories().get(Territorries.EICHENWALD)).isEqualTo(0);
+        }
+    }
+
+    @Nested
+    class GetTerritories {
+
+        @Test
+        void ohneGebiete_gibtLeereMapZurueck() {
+            when(userRepository.findById(2L)).thenReturn(Optional.empty());
+            Player p = new Player(2L, userRepository);
+
+            assertThat(p.getTerritories()).isEmpty();
+        }
+    }
+
+    @Nested
+    class GetUserId {
+
+        @Test
+        void gibtKorrekteUserIdZurueck() {
+            assertThat(player.getUserId()).isEqualTo(1L);
+        }
+    }
+
+    @Nested
+    class HostFlag {
+
+        @Test
+        void standardmaessigNichtHost() {
+            assertThat(player.isHost()).isFalse();
+        }
+
+        @Test
+        void setHost_setzHostAufTrue() {
+            player.setHost(true);
+
+            assertThat(player.isHost()).isTrue();
+        }
+
+        @Test
+        void setHost_setzHostAufFalse() {
+            player.setHost(true);
+            player.setHost(false);
+
+            assertThat(player.isHost()).isFalse();
         }
     }
 }
