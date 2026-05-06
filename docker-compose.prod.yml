@@ -39,11 +39,10 @@ services:
       com.centurylinklabs.watchtower.enable: "true"
 
   watchtower:
-    image: containrrr/watchtower:latest
+    image: nickfedor/watchtower:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: --label-enable --cleanup
     restart: unless-stopped
-
 volumes:
   db-data:
