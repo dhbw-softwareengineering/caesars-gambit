@@ -65,6 +65,14 @@ public class Gamestate {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         gameController.broadcastEvent(emitters, "currentPlayer", currentPlayer.username);
+        List<SseEmitter> currentPlayeremitter = new ArrayList<>();
+        currentPlayeremitter.add(currentPlayer.emitter);
+        gameController.broadcastEvent(currentPlayeremitter, "askDistTroops",  calculateReinforcements(currentPlayer));
+    }
+
+    public int calculateReinforcements(Player player) {
+        int territoryCount = player.getTerritories().size();
+        return Math.max(3, territoryCount / 3); // TODO hier Kontinentbonus einpflegen
     }
 
     public void endMove() {
@@ -97,7 +105,8 @@ public class Gamestate {
                     gameController.broadcastEvent(emitters, "askDistTroops", toTerritory);
                 } else {
                     p.getTerritories().put(toTerritory, p.getTerritories().get(toTerritory) - lostTroopsDefence);
-                    currentPlayer.getTerritories().put(fromTerritory, currentPlayer.getTerritories().get(fromTerritory) - lostTroopsAttack);
+                    currentPlayer.getTerritories().put(fromTerritory,
+                            currentPlayer.getTerritories().get(fromTerritory) - lostTroopsAttack);
                 }
             }
         }

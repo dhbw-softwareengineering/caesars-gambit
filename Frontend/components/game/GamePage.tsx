@@ -7,6 +7,7 @@ import { distTroops } from '../api/distTroops'
 import { useGetCurrentUser } from '../api/getCurrentUser'
 import { moveTroops } from '../api/moveTroops'
 import { attack } from '../api/attack'
+import { endTurn } from '../api/endTurn'
 
 type GamePageProps = {
     roomId: string
@@ -128,6 +129,14 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount, play
         console.log('Region angeklickt:', regionId, regionClicked)
         setRegionClicked(regionId)
     }
+
+    async function handleEndTurn() {
+        if (pendingDistCount) {
+            return
+        }
+        await endTurn(roomId);
+    }
+
     return (
         <div style={{ background: '#07142a', height: "100vh", display: "flex", color: "white", width: "100%" }}>
             <div
@@ -165,7 +174,7 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount, play
                             onRegionClick={handleRegionClick}
                             gameStateJson={gameStateJson}
                         />
-                        <button onClick={() => console.log("EndTurn")}>EndTurn</button>
+                        <button onClick={() => handleEndTurn()}>EndTurn</button>
                     </div>
                 </div>
             </div>
