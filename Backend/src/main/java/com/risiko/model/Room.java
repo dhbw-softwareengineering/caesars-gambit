@@ -66,7 +66,7 @@ public class Room {
             throw new IllegalStateException("Game already started");
         }
         gameStarted = true;
-        gamestate = new Gamestate(roomId, players, gameController);
+        gamestate = new Gamestate(roomId, players, gameController, this);
         gamestate.start();
     }
 
