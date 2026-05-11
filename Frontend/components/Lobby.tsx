@@ -35,7 +35,7 @@ export function Lobby({roomId, playerNames, chatMessages, onGameStart, router}: 
     const handleLeaveRoom = async () => {
         try {
             await leaveRoom(Number(roomId));
-            router.push('/mainmenu');
+            router.push('/');
         } catch (err) {
             console.error('Failed to leave room:', err);
         }
