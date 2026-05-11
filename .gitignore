@@ -10,6 +10,4 @@ target/
 *.env
 
 frontend/pnpm-workspace.yaml
-SoftwareEngineeringStuff/Metriken/ck
-SoftwareEngineeringStuff/Metriken/metrics/method.csv
 
