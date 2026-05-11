@@ -11,7 +11,7 @@ class TerritoriesTest {
     class GetDisplayName {
 
         @Test
-        void gibtKorrektennDisplayNameZurueck() {
+        void gibtKorrektenDisplayNameZurueck() {
             assertThat(Territorries.PALATIN.getDisplayName()).isEqualTo("Palatin");
         }
 
