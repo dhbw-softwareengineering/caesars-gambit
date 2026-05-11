@@ -37,7 +37,38 @@ describe('useGetCurrentUser', () => {
     const { result } = renderHook(() => useGetCurrentUser())
 
     await waitFor(() => {
-      expect(result.current).toEqual(mockUser)
+      expect(result.current.status).toBe('authenticated')
+      expect(result.current.user).toEqual(mockUser)
+    })
+  })
+
+  it('should treat 401 as unauthenticated', async () => {
+    ;(global.fetch as Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+    })
+
+    const { result } = renderHook(() => useGetCurrentUser())
+
+    await waitFor(() => {
+      expect(result.current.status).toBe('unauthenticated')
+      expect(result.current.user).toBeNull()
+      expect(result.current.error).toBeNull()
+    })
+  })
+
+  it('should treat backend errors as error state', async () => {
+    ;(global.fetch as Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+    })
+
+    const { result } = renderHook(() => useGetCurrentUser())
+
+    await waitFor(() => {
+      expect(result.current.status).toBe('error')
+      expect(result.current.error).toBe('Anwendung ist zur Zeit nicht verfügbar')
+      expect(result.current.user).toBeNull()
     })
   })
 

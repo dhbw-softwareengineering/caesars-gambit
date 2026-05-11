@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DistributionDialog } from './DistributionDialog'
-import { attack } from '../api/attack'
 
 describe('DistributionDialog', () => {
   const mockOnConfirm = vi.fn()

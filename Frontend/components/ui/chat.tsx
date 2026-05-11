@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { sendMessage } from "../api/sendMessage";
 import { useGetCurrentUser } from "../api/getCurrentUser";
+import { Spinner } from "./spinner";
 
 type ChatProps = {
   msg: { username: string; message: string }[];
@@ -11,7 +12,7 @@ export function Chat({ msg, roomId }: ChatProps) {
   const [messageInput, setMessageInput] = useState<string>("");
   const listRef = useRef<HTMLDivElement | null>(null);
   const numericRoomId = typeof roomId === "string" ? Number(roomId) : (roomId as number | undefined);
-  const user = useGetCurrentUser();
+  const currentUser = useGetCurrentUser();
 
   useEffect(() => {
     if (!listRef.current) return;
@@ -30,9 +31,26 @@ export function Chat({ msg, roomId }: ChatProps) {
     }
   };
 
-if (user === null || !msg) {
-  return <div>Loading...</div>;
-}
+  if (currentUser.status === "loading") {
+    return (
+      <div className="flex min-h-[240px] items-center justify-center p-4 text-slate-400">
+        <div className="flex items-center gap-2 text-sm">
+          <Spinner className="size-4" />
+          <span>Chat wird geladen...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentUser.status === "error") {
+    return (
+      <div className="flex min-h-[240px] items-center justify-center p-4 text-center text-slate-400">
+        <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-300">
+          Anwendung ist zur Zeit nicht verfügbar
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -58,7 +76,7 @@ if (user === null || !msg) {
                 .toUpperCase()
             : "?";
 
-          const isOwnMessage = user && user.username === item.username;
+          const isOwnMessage = currentUser.status === "authenticated" && currentUser.user.username === item.username;
 
           return (
             <div key={index} className="flex items-start gap-3">
@@ -99,6 +117,7 @@ if (user === null || !msg) {
               void handleSend();
             }
           }}
+          disabled={currentUser.status === "unauthenticated"}
         />
 
         <button
@@ -106,10 +125,15 @@ if (user === null || !msg) {
             messageInput.trim() ? "bg-violet-600 hover:bg-violet-700" : "bg-violet-300 cursor-not-allowed"
           }`}
           onClick={() => void handleSend()}
-          disabled={!messageInput.trim() || !numericRoomId || Number.isNaN(numericRoomId)}>
+          disabled={
+            !messageInput.trim() || !numericRoomId || Number.isNaN(numericRoomId) || currentUser.status === "unauthenticated"
+          }>
           Senden
         </button>
       </div>
+      {currentUser.status === "unauthenticated" && (
+        <div className="mt-2 text-sm text-red-400">Bitte melde dich an, um Nachrichten zu senden.</div>
+      )}
     </div>
   );
 }

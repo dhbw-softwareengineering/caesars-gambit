@@ -10,7 +10,6 @@ export default function SignoutPage() {
   useEffect(() => {
     (async () => {
       await signOut();
-      // redirect to login after signout
       router.push("/auth/login");
     })();
   }, [router]);

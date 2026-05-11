@@ -12,9 +12,9 @@ export default function SettingsPage() {
     const currentUser = useGetCurrentUser();
 
     useEffect(() => {
-        if (currentUser?.username) {
+        if (currentUser.status === "authenticated") {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            setName(currentUser.username);
+            setName(currentUser.user.username);
         }
     }, [currentUser]);
 
@@ -44,7 +44,7 @@ export default function SettingsPage() {
 
                 <div className="flex justify-end gap-2">
                     <Button variant="secondary" type="button">Zurücksetzen</Button>
-                    <Button variant="destructive" type="button" onClick={async () => router.push("/mainmenu")}>Schließen</Button>
+                    <Button variant="destructive" type="button" onClick={() => router.push("/")}>Schließen</Button>
                 </div>
             </div>
         </main>

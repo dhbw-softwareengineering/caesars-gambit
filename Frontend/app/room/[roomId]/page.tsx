@@ -15,6 +15,7 @@ export default function RoomPage() {
   const [pendingDistCount, setPendingDistCount] = useState<number | null>(null);
   const router = useRouter();
   const currentUser = useGetCurrentUser();
+  const currentUsername = currentUser.status === "authenticated" ? currentUser.user.username : null;
   const searchParams = useSearchParams();
 
   function playerListUpdated(e: MessageEvent) {
@@ -54,7 +55,7 @@ export default function RoomPage() {
       setChatMessages((prev) => [...prev, data]);
     });
     eventSource.addEventListener("currentPlayer", (e: MessageEvent) => {
-      if (currentUser && currentUser.username === e.data) {
+      if (currentUsername && currentUsername === e.data) {
         alert("Du bist am Zug! Verteile deine Truppen.");
       }
     });
@@ -64,7 +65,7 @@ export default function RoomPage() {
     };
 
     return () => eventSource.close();
-  }, [roomId, currentUser]);
+  }, [roomId, currentUsername, router]);
 
   function handleGameStarted() {
     setGameStarted(true);

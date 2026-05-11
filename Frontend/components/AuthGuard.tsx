@@ -11,7 +11,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const publicPaths = ["/auth"];
-    const isPublic = publicPaths.some(p => pathname?.startsWith(p));
+    const isPublic = pathname === "/" || publicPaths.some(p => pathname?.startsWith(p));
     if (isPublic) return;
 
     fetch(`${API_BASE}/api/user/currentUser`, {
