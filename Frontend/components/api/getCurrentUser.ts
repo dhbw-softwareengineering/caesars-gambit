@@ -5,25 +5,33 @@ export function useGetCurrentUser() {
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
-        }/api/user/currentUser`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!response.ok) {
-        throw new Error("CurrentUser unavailable");
-      }
+      try {
+        const response = await fetch(
+          `${
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+          }/api/user/currentUser`,
+          {
+            method: "GET",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      setData(await response.json());
+        if (!response.ok) {
+          setData(null);
+          return;
+        }
+
+        setData(await response.json());
+      } catch {
+        setData(null);
+      }
     }
+
     void fetchData();
   }, []);
+
   return data;
 }

@@ -64,7 +64,7 @@ export default function RoomPage() {
     };
 
     return () => eventSource.close();
-  }, [roomId, currentUser]);
+  }, [roomId, currentUser, router]);
 
   function handleGameStarted() {
     setGameStarted(true);
