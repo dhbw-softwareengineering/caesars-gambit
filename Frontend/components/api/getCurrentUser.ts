@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import type { UserDTO } from "@/types/api";
+import type { UserDto } from "@/types/api";
 
 export type CurrentUserState =
   | {
@@ -10,7 +10,7 @@ export type CurrentUserState =
     }
   | {
       status: "authenticated";
-      user: UserDTO;
+      user: UserDto;
       error: null;
     }
   | {
@@ -57,7 +57,7 @@ export function useGetCurrentUser(): CurrentUserState {
           return;
         }
 
-        const user = (await response.json()) as UserDTO;
+        const user = (await response.json()) as UserDto;
         setState({ status: "authenticated", user, error: null });
       } catch {
         setState({ status: "error", user: null, error: BACKEND_UNAVAILABLE_MESSAGE });
