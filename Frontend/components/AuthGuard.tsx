@@ -10,12 +10,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Public paths that don't require authentication. Treat root explicitly.
     const publicPaths = ["/auth"];
     const isPublic = pathname === "/" || publicPaths.some(p => pathname?.startsWith(p));
     if (isPublic) return;
 
-    // Check authentication for protected routes
     fetch(`${API_BASE}/api/user/currentUser`, {
       credentials: "include",
     }).then(res => {

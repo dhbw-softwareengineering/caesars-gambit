@@ -17,18 +17,17 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null); // Zustand für die Nachricht
+  const [message, setMessage] = useState<string | null>(null); 
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Hole den Query-Parameter "m" und speichere ihn im Zustand
     const queryMessage = searchParams.get("m");
     if (queryMessage) {
-      setMessage(queryMessage); // Nachricht im Zustand speichern
+      setMessage(queryMessage); 
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.delete("m");
-      router.replace(currentUrl.toString()); // Query-Parameter aus der URL entfernen
+      router.replace(currentUrl.toString()); 
     }
   }, [searchParams, router]);
 

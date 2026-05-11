@@ -42,7 +42,6 @@ export default function Home() {
     return null;
   }
 
-  // Derive auth state from `useGetCurrentUser()`:
   const loading = currentUser.status === "loading";
   const isAuthenticated = currentUser.status === "authenticated";
 

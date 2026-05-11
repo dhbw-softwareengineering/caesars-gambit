@@ -31,7 +31,6 @@ export function Chat({ msg, roomId }: ChatProps) {
     }
   };
 
-  // `undefined` = loading, `null` = unauthenticated
   if (currentUser.status === "loading") {
     return (
       <div className="flex min-h-[240px] items-center justify-center p-4 text-slate-400">
