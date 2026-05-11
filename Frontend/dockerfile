@@ -1,6 +1,6 @@
 # Dependencies stage
 FROM node:22.13-alpine AS deps
-RUN corepack enable && corepack prepare pnpm@9.1.1 --activate
+RUN npm install -g pnpm@10.33.4
 WORKDIR /app
 COPY package.json pnpm-lock.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
@@ -8,7 +8,7 @@ RUN pnpm install --frozen-lockfile
 # Builder stage
 FROM node:22.13-alpine AS builder
 ARG NEXT_PUBLIC_API_URL=http://localhost:8080
-RUN corepack enable && corepack prepare pnpm@9.1.1 --activate
+RUN npm install -g pnpm@10.33.4
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
