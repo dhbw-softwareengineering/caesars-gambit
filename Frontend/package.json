@@ -2,6 +2,10 @@
   "name": "caesars-gambit",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22.13.x",
+    "pnpm": "9.1.1"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
