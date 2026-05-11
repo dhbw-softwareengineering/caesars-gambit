@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -65,8 +66,7 @@ class RoomTest {
 
         @Test
         void setzGameStartedAufFalse() {
-            when(userRepository.findById(1L)).thenReturn(Optional.empty());
-            room.joinRoom(1L, false);
+            ReflectionTestUtils.setField(room, "gameStarted", true);
 
             room.endGame();
 
@@ -75,6 +75,9 @@ class RoomTest {
 
         @Test
         void setzGamestateAufNull() {
+            Gamestate mockGamestate = Mockito.mock(Gamestate.class);
+            ReflectionTestUtils.setField((Object) room, "gamestate", mockGamestate);
+
             room.endGame();
 
             assertThat(room.getGamestate()).isNull();
