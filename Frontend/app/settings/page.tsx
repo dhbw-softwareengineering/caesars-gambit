@@ -12,9 +12,9 @@ export default function SettingsPage() {
     const currentUser = useGetCurrentUser();
 
     useEffect(() => {
-        if (currentUser?.username) {
+        if (currentUser.status === "authenticated") {
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            setName(currentUser.username);
+            setName(currentUser.user.username);
         }
     }, [currentUser]);
 

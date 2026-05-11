@@ -43,8 +43,8 @@ export default function Home() {
   }
 
   // Derive auth state from `useGetCurrentUser()`:
-  const loading = currentUser === undefined;
-  const isAuthenticated = Boolean(currentUser);
+  const loading = currentUser.status === "loading";
+  const isAuthenticated = currentUser.status === "authenticated";
 
   const handleLogout = async () => {
     try {
@@ -60,6 +60,21 @@ export default function Home() {
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         <div className="flex items-center">
           <Spinner className="size-5 text-blue-300" />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentUser.status === "error") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-6 text-white">
+        <div className="max-w-md rounded-3xl border border-white/10 bg-white/5 p-6 text-center shadow-2xl backdrop-blur-md">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-blue-200/80">Fehler</p>
+          <h1 className="mt-4 text-3xl font-bold">Anwendung ist zur Zeit nicht verfügbar</h1>
+          <p className="mt-3 text-sm text-slate-300">Bitte versuche es in ein paar Minuten erneut.</p>
+          <Button className="mt-6" variant="primary" size="lg" onClick={() => window.location.reload()}>
+            Erneut versuchen
+          </Button>
         </div>
       </div>
     );
@@ -100,7 +115,7 @@ export default function Home() {
       </nav>
 
       <main className="relative z-10 mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-[1.1fr_0.9fr]">
-        {isAuthenticated && currentUser ? (
+        {isAuthenticated ? (
           <>
             <section className="space-y-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-400/10 px-4 py-2 text-sm text-blue-100 backdrop-blur-sm">
@@ -108,7 +123,7 @@ export default function Home() {
               </div>
               <div className="space-y-4">
                 <h2 className="text-5xl font-bold leading-tight md:text-6xl">
-                  Willkommen, <span className="text-blue-400">{currentUser.username}</span>! 🎮
+                  Willkommen, <span className="text-blue-400">{currentUser.user.username}</span>! 🎮
                 </h2>
                 <p className="max-w-xl text-xl text-slate-300">
                   Erstelle eine Lobby, tritt einer Partie bei oder passe dein Profil an.

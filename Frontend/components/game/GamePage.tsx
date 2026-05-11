@@ -34,6 +34,7 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount, play
     const [attackDialog, setAttackDialog] = useState(false)
     const ownerColorMap = useOwnerColorMap(territories)
     const currentUser = useGetCurrentUser()
+    const currentUsername = currentUser.status === "authenticated" ? currentUser.user.username : null
 
     useEffect(() => {
         if (!gameStateJson) return
@@ -51,7 +52,7 @@ export default function GamePage({ roomId, gameStateJson, pendingDistCount, play
 
     function territoryOwnedByCurrentUser(territoryId: string): boolean {
         const territory = territories.find((t) => t.territory === territoryId)
-        return territory?.owner === currentUser?.username
+        return territory?.owner === currentUsername
     }
 
     function territoryTroopCount(territoryId: string): number {
