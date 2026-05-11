@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import type { UserDto } from "@/types/api";
+import type { UserDto } from "@/types/dto";
 
 export type CurrentUserState =
   | {
