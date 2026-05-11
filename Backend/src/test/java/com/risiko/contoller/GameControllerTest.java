@@ -1,0 +1,161 @@
+package com.risiko.contoller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.risiko.model.Gamestate;
+import com.risiko.model.Player;
+import com.risiko.model.Room;
+import com.risiko.model.User;
+import com.risiko.services.AuthService;
+import com.risiko.services.RoomService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@ExtendWith(MockitoExtension.class)
+class GameControllerTest {
+
+    @Mock
+    private RoomService roomService;
+
+    @Mock
+    private AuthService authService;
+
+    @InjectMocks
+    private GameController gameController;
+
+    @Mock
+    private Room room;
+
+    @Mock
+    private Gamestate gamestate;
+
+    @Mock
+    private Player player;
+
+    private MockMvc mockMvc;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(gameController).build();
+    }
+
+    @Nested
+    class Move {
+
+        @Test
+        void gueltigeAnfrage_fuehrtMoveTroopsAus() throws Exception {
+            when(roomService.getRoomById(1)).thenReturn(room);
+            when(room.getGamestate()).thenReturn(gamestate);
+            when(gamestate.getCurrentPlayer()).thenReturn(player);
+
+            mockMvc.perform(post("/api/game/move")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            Map.of("roomId", 1, "from", "Palatin", "to", "Laterano", "sum", 3))))
+                    .andExpect(status().isOk());
+
+            verify(player).moveTroops(any(), any(), eq(3));
+            verify(gamestate).sendGameStateUpdate();
+        }
+
+        @Test
+        void raumNichtGefunden_wirftNullPointerException() {
+            when(roomService.getRoomById(99)).thenReturn(null);
+
+            Exception thrown = assertThrows(Exception.class, () ->
+                    mockMvc.perform(post("/api/game/move")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    Map.of("roomId", 99, "from", "Palatin", "to", "Laterano", "sum", 3)))));
+
+            assertThat(thrown.getCause()).isInstanceOf(NullPointerException.class);
+        }
+    }
+
+    @Nested
+    class Attack {
+
+        @Test
+        void gueltigeAnfrage_fuehrtAttackAus() throws Exception {
+            when(roomService.getRoomById(1)).thenReturn(room);
+            when(room.getGamestate()).thenReturn(gamestate);
+
+            mockMvc.perform(post("/api/game/attack")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            Map.of("roomId", 1, "from", "Palatin", "to", "Laterano", "sum", 2))))
+                    .andExpect(status().isOk());
+
+            verify(gamestate).attack(any(), any(), eq(2));
+            verify(gamestate).sendGameStateUpdate();
+        }
+
+        @Test
+        void raumNichtGefunden_wirftNullPointerException() {
+            when(roomService.getRoomById(99)).thenReturn(null);
+
+            Exception thrown = assertThrows(Exception.class, () ->
+                    mockMvc.perform(post("/api/game/attack")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    Map.of("roomId", 99, "from", "Palatin", "to", "Laterano", "sum", 2)))));
+
+            assertThat(thrown.getCause()).isInstanceOf(NullPointerException.class);
+        }
+    }
+
+    @Nested
+    class DistTroops {
+
+        @Test
+        void gueltigeAnfrage_verteiltTruppen() throws Exception {
+            User user = new User();
+            user.setId(7L);
+            when(authService.getUserFromAuth()).thenReturn(user);
+            when(roomService.getRoomById(1)).thenReturn(room);
+            when(room.getGamestate()).thenReturn(gamestate);
+            when(gamestate.getPlayerByUserId(7L)).thenReturn(player);
+
+            mockMvc.perform(post("/api/game/distTroops")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            Map.of("roomId", "1", "to", "Palatin", "sum", 5))))
+                    .andExpect(status().isOk());
+
+            verify(player).distTroops(any(), eq(5));
+            verify(gamestate).sendGameStateUpdate();
+        }
+    }
+
+    @Nested
+    class Stream {
+
+        @Test
+        void raumNichtGefunden_wirftException() {
+            when(roomService.getRoomById(99)).thenReturn(null);
+
+            Exception thrown = assertThrows(Exception.class, () ->
+                    mockMvc.perform(get("/api/game/stream/99")));
+
+            assertThat(thrown.getCause()).isInstanceOf(RuntimeException.class)
+                    .hasMessage("Room not found");
+        }
+    }
+}
