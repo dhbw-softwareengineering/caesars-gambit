@@ -18,7 +18,7 @@ const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
   secondary: "bg-[#1E40AF] text-white font-bold hover:bg-[#1E3A8A]",
   destructive:
     "bg-[#B94A5A] text-white font-bold hover:bg-[#A03D50] focus-visible:ring-[#B94A5A]/40",
-  ghost: "bg-transparent text-black border border-black hover:bg-gray-100 border border-black/10",
+  ghost: "bg-transparent text-slate-200 border border-slate-700/30 hover:bg-slate-800/40",
 }
 
 const sizeClasses: Record<NonNullable<ButtonProps["size"]>, string> = {
