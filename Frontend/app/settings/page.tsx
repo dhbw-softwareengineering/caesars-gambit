@@ -44,7 +44,7 @@ export default function SettingsPage() {
 
                 <div className="flex justify-end gap-2">
                     <Button variant="secondary" type="button">Zurücksetzen</Button>
-                    <Button variant="destructive" type="button" onClick={async () => router.push("/")}>Schließen</Button>
+                    <Button variant="destructive" type="button" onClick={() => router.push("/")}>Schließen</Button>
                 </div>
             </div>
         </main>

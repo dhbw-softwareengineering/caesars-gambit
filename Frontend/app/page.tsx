@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/ui/button";
@@ -9,16 +9,18 @@ import { joinRoom } from "@/components/api/joinRoom";
 import signOut from "@/lib/auth";
 import { Github } from "lucide-react";
 import { useGetCurrentUser } from "@/components/api/getCurrentUser";
+import { Spinner } from "@/components/ui/spinner";
 
 import packageJson from "@/package.json";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 const APP_VERSION = packageJson.version;
 
 export default function Home() {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [showJoinInput, setShowJoinInput] = useState(false);
   const [roomId, setRoomId] = useState("");
   const currentUser = useGetCurrentUser();
@@ -40,27 +42,14 @@ export default function Home() {
     return null;
   }
 
-  useEffect(() => {
-    // Check if user is authenticated
-    fetch(`${API_BASE}/api/user/currentUser`, {
-      credentials: "include",
-    })
-      .then((res) => {
-        setIsAuthenticated(res.ok);
-      })
-      .catch(() => {
-        setIsAuthenticated(false);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  // Derive auth state from `useGetCurrentUser()`:
+  const loading = currentUser === undefined;
+  const isAuthenticated = Boolean(currentUser);
 
   const handleLogout = async () => {
     try {
       await signOut();
-      setIsAuthenticated(false);
-      router.push("/");
+      window.location.assign("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -69,7 +58,9 @@ export default function Home() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="text-white">Loading...</div>
+        <div className="flex items-center">
+          <Spinner className="size-5 text-blue-300" />
+        </div>
       </div>
     );
   }
@@ -136,16 +127,29 @@ export default function Home() {
               </div>
 
               <div className="flex flex-col gap-3">
+                <div className="mb-2">
+                  {createError && <div className="text-sm text-red-400 mb-2">{createError}</div>}
+                </div>
                 <Button
                   variant="primary"
                   size="lg"
                   onClick={async () => {
-                    const room = await createRoom();
-                    await joinRoom(room, true);
-                    router.push(`/room/${room}`);
+                    setCreateError(null);
+                    setIsCreating(true);
+                    try {
+                      const room = await createRoom();
+                      await joinRoom(room, true);
+                      router.push(`/room/${room}`);
+                    } catch (err) {
+                      console.error("Create room failed", err);
+                      setCreateError("Fehler beim Erstellen der Lobby. Bitte versuche es erneut.");
+                    } finally {
+                      setIsCreating(false);
+                    }
                   }}
+                  disabled={isCreating}
                 >
-                  Spiel erstellen
+                  {isCreating ? "Erstelle..." : "Spiel erstellen"}
                 </Button>
 
                 {!showJoinInput ? (
@@ -161,20 +165,35 @@ export default function Home() {
                       onChange={(e) => setRoomId(e.target.value)}
                       className="h-full flex-1 rounded-lg border-0 px-3 text-sm text-slate-800 outline-none"
                     />
-                    <Button
-                      className="w-auto rounded-lg bg-blue-500 px-3 py-2 text-sm font-bold text-white"
-                      type="button"
-                      onClick={async () => {
-                        const parsedRoomId = parseRoomId(roomId);
-                        if (parsedRoomId == null) return;
+                    <div className="flex items-center gap-2">
+                      <Button
+                        className="w-auto rounded-lg bg-blue-500 px-3 py-2 text-sm font-bold text-white"
+                        type="button"
+                        onClick={async () => {
+                          setJoinError(null);
+                          const parsedRoomId = parseRoomId(roomId);
+                          if (parsedRoomId == null) {
+                            setJoinError("Ungültige Raum-ID oder Link.");
+                            return;
+                          }
 
-                        await joinRoom(parsedRoomId);
-                        router.push(`/room/${parsedRoomId}`);
-                      }}
-                      disabled={parseRoomId(roomId) == null}
-                    >
-                      Raum beitreten
-                    </Button>
+                          setIsJoining(true);
+                          try {
+                            await joinRoom(parsedRoomId);
+                            router.push(`/room/${parsedRoomId}`);
+                          } catch (err) {
+                            console.error("Join room failed", err);
+                            setJoinError("Raum konnte nicht gefunden oder beigetreten werden.");
+                          } finally {
+                            setIsJoining(false);
+                          }
+                        }}
+                        disabled={parseRoomId(roomId) == null || isJoining}
+                      >
+                        {isJoining ? "Beitreten..." : "Raum beitreten"}
+                      </Button>
+                      {joinError && <div className="text-sm text-red-400">{joinError}</div>}
+                    </div>
                   </div>
                 )}
 

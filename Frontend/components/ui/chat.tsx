@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { sendMessage } from "../api/sendMessage";
 import { useGetCurrentUser } from "../api/getCurrentUser";
+import { Spinner } from "./spinner";
 
 type ChatProps = {
   msg: { username: string; message: string }[];
@@ -30,9 +31,17 @@ export function Chat({ msg, roomId }: ChatProps) {
     }
   };
 
-if (user === null || !msg) {
-  return <div>Loading...</div>;
-}
+  // `undefined` = loading, `null` = unauthenticated
+  if (user === undefined) {
+    return (
+      <div className="flex min-h-[240px] items-center justify-center p-4 text-slate-400">
+        <div className="flex items-center gap-2 text-sm">
+          <Spinner className="size-4" />
+          <span>Chat wird geladen...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -99,6 +108,7 @@ if (user === null || !msg) {
               void handleSend();
             }
           }}
+          disabled={user === null}
         />
 
         <button
@@ -106,10 +116,15 @@ if (user === null || !msg) {
             messageInput.trim() ? "bg-violet-600 hover:bg-violet-700" : "bg-violet-300 cursor-not-allowed"
           }`}
           onClick={() => void handleSend()}
-          disabled={!messageInput.trim() || !numericRoomId || Number.isNaN(numericRoomId)}>
+          disabled={
+            !messageInput.trim() || !numericRoomId || Number.isNaN(numericRoomId) || user === null
+          }>
           Senden
         </button>
       </div>
+      {user === null && (
+        <div className="mt-2 text-sm text-red-400">Bitte melde dich an, um Nachrichten zu senden.</div>
+      )}
     </div>
   );
 }
