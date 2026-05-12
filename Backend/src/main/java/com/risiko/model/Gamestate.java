@@ -118,7 +118,7 @@ public class Gamestate {
                     currentPlayer.distTroops(fromTerritory, -lostTroopsAttack);
                     List<SseEmitter> emitters = new ArrayList<>();
                     emitters.add(currentPlayer.emitter);
-                    gameController.broadcastEvent(emitters, "askDistTroops", toTerritory);
+                    gameController.broadcastEvent(emitters, "winTerritory", toTerritory + " " +  currentPlayer.username);
                 } else {
                     p.getTerritories().put(toTerritory, p.getTerritories().get(toTerritory) - lostTroopsDefence);
                     currentPlayer.getTerritories().put(fromTerritory,
@@ -133,7 +133,7 @@ public class Gamestate {
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()),
                 "attackResult",
-                "Attack from " + fromTerritory + " to " + toTerritory + " completed.");
+                "Attack from " + fromTerritory + " to " + toTerritory + " completed."); // TODO: lost troops hier noch einfügen für ui ux nur relevant wenn gebiet nicht gewonnen wurde
         checkIfGameEnded();
     }
 
