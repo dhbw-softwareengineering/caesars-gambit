@@ -12,16 +12,17 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.risiko.contoller.GameController;
 import com.risiko.model.dto.TerritoryStateDto;
-
 public class Gamestate {
     private final List<Player> players;
     private static final int INITIAL_TROOPS = 40;
     private Player currentPlayer;
     private final GameController gameController;
+    private final Room room;
 
-    public Gamestate(int roomId, List<Player> players, GameController gameController) {
+    public Gamestate(Room room, List<Player> players, GameController gameController) {
         this.players = players;
         this.gameController = gameController;
+        this.room = room;
     }
 
     public void start() {
@@ -67,7 +68,7 @@ public class Gamestate {
         gameController.broadcastEvent(emitters, "currentPlayer", currentPlayer.username);
         List<SseEmitter> currentPlayeremitter = new ArrayList<>();
         currentPlayeremitter.add(currentPlayer.emitter);
-        gameController.broadcastEvent(currentPlayeremitter, "askDistTroops",  calculateReinforcements(currentPlayer));
+        gameController.broadcastEvent(currentPlayeremitter, "askDistTroops", calculateReinforcements(currentPlayer));
     }
 
     public int calculateReinforcements(Player player) {
@@ -80,6 +81,21 @@ public class Gamestate {
         int nextIndex = (currentIndex + 1) % players.size();
         currentPlayer = players.get(nextIndex);
         nextMove();
+    }
+
+    public void checkIfGameEnded() {
+        List<Player> activePlayers = players.stream()
+                .filter(p -> p.getTerritories().size() > 0)
+                .collect(Collectors.toList());
+        if (activePlayers.size() == 1) {
+            Player winner = activePlayers.get(0);
+            List<SseEmitter> emitters = players.stream()
+                    .map(p -> p.emitter)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            gameController.broadcastEvent(emitters, "gameEnded", "Player " + winner.username + " has won the game!");
+            room.endGame();
+        }
     }
 
     public void attack(Territorries fromTerritory, Territorries toTerritory, int sum) {
@@ -118,6 +134,7 @@ public class Gamestate {
                         .collect(Collectors.toList()),
                 "attackResult",
                 "Attack from " + fromTerritory + " to " + toTerritory + " completed.");
+        checkIfGameEnded();
     }
 
     public static List<Integer> dice(int rollCount, int returnCount) {
