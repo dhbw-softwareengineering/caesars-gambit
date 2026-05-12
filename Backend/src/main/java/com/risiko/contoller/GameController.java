@@ -83,6 +83,13 @@ public class GameController {
         room.getGamestate().sendGameStateUpdate();
     }
 
+    @PostMapping("/endTurn")
+    public void endTurn(@RequestBody Map<String, Object> request) {
+        Room room = roomService.getRoomById(Integer.parseInt((String) request.get("roomId")));
+        room.getGamestate().endMove();
+        room.getGamestate().sendGameStateUpdate();
+    }
+
     public void broadcastEvent(List<SseEmitter> emitters, String eventName, Object data) {
         for (SseEmitter emitter : emitters) {
             try {
