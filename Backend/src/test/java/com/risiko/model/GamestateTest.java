@@ -92,7 +92,7 @@ class GamestateTest {
         @Test
         void vorhandenerSpieler_gibtSpielerZurueck() {
             Player player = makePlayer(1L);
-            Gamestate gamestate = new Gamestate(1, List.of(player), gameController);
+            Gamestate gamestate = new Gamestate(null, List.of(player), gameController);
 
             assertThat(gamestate.getPlayerByUserId(1L)).isEqualTo(player);
         }
@@ -100,14 +100,14 @@ class GamestateTest {
         @Test
         void nichtVorhandenerSpieler_gibtNullZurueck() {
             Player player = makePlayer(1L);
-            Gamestate gamestate = new Gamestate(1, List.of(player), gameController);
+            Gamestate gamestate = new Gamestate(null, List.of(player), gameController);
 
             assertThat(gamestate.getPlayerByUserId(99L)).isNull();
         }
 
         @Test
         void leereSpielerListe_gibtNullZurueck() {
-            Gamestate gamestate = new Gamestate(1, List.of(), gameController);
+            Gamestate gamestate = new Gamestate(null, List.of(), gameController);
 
             assertThat(gamestate.getPlayerByUserId(1L)).isNull();
         }
@@ -121,7 +121,7 @@ class GamestateTest {
             Player p1 = makePlayer(1L);
             Player p2 = makePlayer(2L);
             java.util.List<Player> players = new java.util.ArrayList<>(List.of(p1, p2));
-            Gamestate gamestate = new Gamestate(1, players, gameController);
+            Gamestate gamestate = new Gamestate(null, players, gameController);
             org.springframework.test.util.ReflectionTestUtils.setField(gamestate, "currentPlayer", p1);
 
             gamestate.endMove();
@@ -134,7 +134,7 @@ class GamestateTest {
             Player p1 = makePlayer(1L);
             Player p2 = makePlayer(2L);
             java.util.List<Player> players = new java.util.ArrayList<>(List.of(p1, p2));
-            Gamestate gamestate = new Gamestate(1, players, gameController);
+            Gamestate gamestate = new Gamestate(null, players, gameController);
             org.springframework.test.util.ReflectionTestUtils.setField(gamestate, "currentPlayer", p2);
 
             gamestate.endMove();

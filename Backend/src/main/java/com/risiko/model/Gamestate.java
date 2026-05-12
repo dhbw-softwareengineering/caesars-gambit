@@ -12,7 +12,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.risiko.contoller.GameController;
 import com.risiko.model.dto.TerritoryStateDto;
-
 public class Gamestate {
     private final List<Player> players;
     private static final int INITIAL_TROOPS = 40;
@@ -20,7 +19,7 @@ public class Gamestate {
     private final GameController gameController;
     private final Room room;
 
-    public Gamestate(int roomId, List<Player> players, GameController gameController, Room room) {
+    public Gamestate(Room room, List<Player> players, GameController gameController) {
         this.players = players;
         this.gameController = gameController;
         this.room = room;
