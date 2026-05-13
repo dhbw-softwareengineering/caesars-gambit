@@ -21,7 +21,6 @@ describe('distTroops', () => {
       status: 401,
     })
     
-    // TODO: Error Message muss in dazugehöriger component angepasst werden
 
     await expect(distTroops(5, 'Palatin', '123')).rejects.toThrow('Failed to distribute troops')
   })
@@ -32,7 +31,7 @@ describe('distTroops', () => {
       status: 500,
     })
 
-    await expect(distTroops(5, 'Palatin', '123')).rejects.toThrow('Failed to create room')
+    await expect(distTroops(5, 'Palatin', '123')).rejects.toThrow('Failed to distribute troops')
   })
 
   it('should send correct parameters in body', async () => {

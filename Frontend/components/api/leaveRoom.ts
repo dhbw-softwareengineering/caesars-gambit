@@ -8,7 +8,7 @@ export async function leaveRoom(id: number) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to join room');
+        throw new Error('Failed to leave room');
     }
 
     return;
