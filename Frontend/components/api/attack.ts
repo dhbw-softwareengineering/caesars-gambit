@@ -9,7 +9,7 @@ export async function attack(sum: number, from: string, to: string, roomId: stri
     });
 
     if (!response.ok) {
-        throw new Error('Failed to create room');
+        throw new Error('Failed to attack');
     }
 
     return;
