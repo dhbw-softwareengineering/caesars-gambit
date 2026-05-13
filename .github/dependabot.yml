@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: "/Frontend"
     schedule:
       interval: "weekly"
     groups:
@@ -11,7 +11,7 @@ updates:
           - "patch"
 
   - package-ecosystem: "maven"
-    directory: "/backend"
+    directory: "/Backend"
     schedule:
       interval: "weekly"
     groups:
