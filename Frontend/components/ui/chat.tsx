@@ -107,7 +107,7 @@ export function Chat({ msg, roomId }: ChatProps) {
 
       <div className="mt-3 flex gap-2">
         <input
-          className="flex-1 rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-300"
+          className="flex-1 rounded-md border px-3 py-2 bg-white text-black focus:outline-none focus:ring-2 focus:ring-violet-300"
           placeholder="Nachricht schreiben..."
           value={messageInput}
           onChange={(e) => setMessageInput(e.target.value)}
