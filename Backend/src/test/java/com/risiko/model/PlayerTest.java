@@ -137,9 +137,8 @@ class PlayerTest {
         @Test
         void verlierteWenigerAlsVorhanden_behaeltGebiet() {
             player.distTroops(Territorries.PALATIN, 3); 
-            var territorries = player.getTerritories();
 
-            assertThat(territorries.get(Territorries.PALATIN)).isEqualTo(4);
+            assertThat(player.getTerritories().get(Territorries.PALATIN)).isEqualTo(4);
             
             int result = player.defend(Territorries.PALATIN, 2);
             
