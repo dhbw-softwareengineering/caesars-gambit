@@ -63,7 +63,23 @@ public class GameController {
     @PostMapping("/move")
     public void move(@RequestBody Map<String, Object> request) {
         Room room = roomService.getRoomById(Integer.parseInt(request.get("roomId").toString()));
-        room.getGamestate().getCurrentPlayer().moveTroops(Territorries.getTerritorryByDisplayName((String) request.get("from")), Territorries.getTerritorryByDisplayName((String) request.get("to")), (Integer) request.get("sum"));
+        Territorries from = Territorries.getTerritorryByDisplayName((String) request.get("from"));
+        Territorries to = Territorries.getTerritorryByDisplayName((String) request.get("to"));
+        int sum = ((Number) request.get("sum")).intValue();
+        Player current = room.getGamestate().getCurrentPlayer();
+        if (!current.hasTerritory(from)) {
+            throw new IllegalArgumentException("Das Quellgebiet gehört nicht dem aktuellen Spieler.");
+        }
+        if (!current.hasTerritory(to)) {
+            throw new IllegalArgumentException("Das Zielgebiet gehört nicht dem aktuellen Spieler.");
+        }
+        if (!from.isAdjacentTo(to)) {
+            throw new IllegalArgumentException("Die Gebiete sind nicht benachbart.");
+        }
+        if (current.getTerritories().get(from) <= sum) {
+            throw new IllegalArgumentException("Nicht genug Truppen zum Verschieben.");
+        }
+        current.moveTroops(from, to, sum);
         room.getGamestate().sendGameStateUpdate();
     }
                     

@@ -99,6 +99,15 @@ public class Gamestate {
     }
 
     public void attack(Territorries fromTerritory, Territorries toTerritory, int sum) {
+        if (!currentPlayer.hasTerritory(fromTerritory)) {
+            throw new IllegalArgumentException("Das Angriffsgebiet gehört nicht dem aktuellen Spieler.");
+        }
+        if (!fromTerritory.isAdjacentTo(toTerritory)) {
+            throw new IllegalArgumentException("Die Gebiete sind nicht benachbart.");
+        }
+        if (currentPlayer.getTerritories().get(fromTerritory) <= sum) {
+            throw new IllegalArgumentException("Nicht genug Truppen für diesen Angriff.");
+        }
         for (Player p : players) {
             if (p.hasTerritory(toTerritory)) {
                 List<Integer> attackerRolls = dice(sum, 2); // TODO: wie viele Truppen verteidigen
