@@ -63,6 +63,9 @@ public class GameController {
     @PostMapping("/move")
     public void move(@RequestBody Map<String, Object> request) {
         Room room = roomService.getRoomById(Integer.parseInt(request.get("roomId").toString()));
+        if (room == null) {
+            throw new RuntimeException("Room not found");
+        }
         Territorries from = Territorries.getTerritorryByDisplayName((String) request.get("from"));
         Territorries to = Territorries.getTerritorryByDisplayName((String) request.get("to"));
         int sum = ((Number) request.get("sum")).intValue();
@@ -86,6 +89,9 @@ public class GameController {
     @PostMapping("/attack")
     public void attack(@RequestBody Map<String, Object> request) {
         Room room = roomService.getRoomById(Integer.parseInt(request.get("roomId").toString()));
+        if (room == null) {
+            throw new RuntimeException("Room not found");
+        }
         room.getGamestate().attack(Territorries.getTerritorryByDisplayName((String) request.get("from")), Territorries.getTerritorryByDisplayName((String) request.get("to")), (Integer) request.get("sum"));
         room.getGamestate().sendGameStateUpdate();
     }
@@ -93,6 +99,9 @@ public class GameController {
     @PostMapping("/distTroops")
     public void distTroops(@RequestBody Map<String, Object> request) {
         Room room = roomService.getRoomById(Integer.parseInt((String) request.get("roomId")));
+        if (room == null) {
+            throw new RuntimeException("Room not found");
+        }
         String to = (String) request.get("to");
         int sum = ((Number) request.get("sum")).intValue();
         room.getGamestate().getPlayerByUserId(authService.getUserFromAuth().getId()).distTroops(Territorries.getTerritorryByDisplayName(to), sum);
@@ -102,6 +111,9 @@ public class GameController {
     @PostMapping("/endTurn")
     public void endTurn(@RequestBody Map<String, Object> request) {
         Room room = roomService.getRoomById(Integer.parseInt((String) request.get("roomId")));
+        if (room == null) {
+            throw new RuntimeException("Room not found");
+        }
         room.getGamestate().endMove();
         room.getGamestate().sendGameStateUpdate();
     }
