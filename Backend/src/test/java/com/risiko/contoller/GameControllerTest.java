@@ -149,16 +149,14 @@ class GameControllerTest {
         }
 
         @Test
-        void raumNichtGefunden_wirftNullPointerException() {
+        void raumNichtGefunden_wirft404() throws Exception {
             when(roomService.getRoomById(99)).thenReturn(null);
 
-            Exception thrown = assertThrows(Exception.class, () ->
-                    mockMvc.perform(post("/api/game/move")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    Map.of("roomId", 99, "from", "Palatin", "to", "Laterano", "sum", 3)))));
-
-            assertThat(thrown.getCause()).isInstanceOf(NullPointerException.class);
+            mockMvc.perform(post("/api/game/move")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            Map.of("roomId", 99, "from", "Palatin", "to", "Laterano", "sum", 3))))
+                    .andExpect(status().isNotFound());
         }
     }
 
@@ -181,16 +179,14 @@ class GameControllerTest {
         }
 
         @Test
-        void raumNichtGefunden_wirftNullPointerException() {
+        void raumNichtGefunden_wirft404() throws Exception {
             when(roomService.getRoomById(99)).thenReturn(null);
 
-            Exception thrown = assertThrows(Exception.class, () ->
-                    mockMvc.perform(post("/api/game/attack")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(
-                                    Map.of("roomId", 99, "from", "Palatin", "to", "Laterano", "sum", 2)))));
-
-            assertThat(thrown.getCause()).isInstanceOf(NullPointerException.class);
+            mockMvc.perform(post("/api/game/attack")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            Map.of("roomId", 99, "from", "Palatin", "to", "Laterano", "sum", 2))))
+                    .andExpect(status().isNotFound());
         }
     }
 
@@ -221,14 +217,11 @@ class GameControllerTest {
     class Stream {
 
         @Test
-        void raumNichtGefunden_wirftException() {
+        void raumNichtGefunden_wirft404() throws Exception {
             when(roomService.getRoomById(99)).thenReturn(null);
 
-            Exception thrown = assertThrows(Exception.class, () ->
-                    mockMvc.perform(get("/api/game/stream/99")));
-
-            assertThat(thrown.getCause()).isInstanceOf(RuntimeException.class)
-                    .hasMessage("Room not found");
+            mockMvc.perform(get("/api/game/stream/99"))
+                    .andExpect(status().isNotFound());
         }
     }
 }
