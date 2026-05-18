@@ -67,6 +67,9 @@ public class GameController {
         Territorries to = Territorries.getTerritorryByDisplayName((String) request.get("to"));
         int sum = ((Number) request.get("sum")).intValue();
         Player current = room.getGamestate().getCurrentPlayer();
+        if (sum <= 0) {
+            throw new IllegalArgumentException("Die Anzahl der zu verschiebenden Truppen muss positiv sein.");
+        }
         if (!current.hasTerritory(from)) {
             throw new IllegalArgumentException("Das Quellgebiet gehört nicht dem aktuellen Spieler.");
         }
