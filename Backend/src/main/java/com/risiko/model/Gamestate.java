@@ -99,11 +99,17 @@ public class Gamestate {
     }
 
     public void attack(Territorries fromTerritory, Territorries toTerritory, int sum) {
+        if (sum <= 0) {
+            throw new IllegalArgumentException("Die Anzahl der angreifenden Truppen muss positiv sein.");
+        }
         if (!currentPlayer.hasTerritory(fromTerritory)) {
             throw new IllegalArgumentException("Das Angriffsgebiet gehört nicht dem aktuellen Spieler.");
         }
         if (!fromTerritory.isAdjacentTo(toTerritory)) {
             throw new IllegalArgumentException("Die Gebiete sind nicht benachbart.");
+        }
+        if(currentPlayer.hasTerritory(toTerritory)) {
+            throw new IllegalArgumentException("Das Zielgebiet gehört bereits dem angreifenden Spieler.");
         }
         if (currentPlayer.getTerritories().get(fromTerritory) <= sum) {
             throw new IllegalArgumentException("Nicht genug Truppen für diesen Angriff.");

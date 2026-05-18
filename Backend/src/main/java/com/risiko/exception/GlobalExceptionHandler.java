@@ -1,4 +1,4 @@
-package com.risiko.contoller;
+package com.risiko.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +22,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", ex.getMessage()));
+                //TODO: gescheites Error Handling nicht alle runtime auf 404
     }
 
     @ExceptionHandler(Exception.class)

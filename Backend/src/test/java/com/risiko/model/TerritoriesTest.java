@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TerritoriesTest {
 
@@ -59,6 +60,50 @@ class TerritoriesTest {
             for (Territorries t : Territorries.values()) {
                 assertThat(Territorries.getTerritorryByDisplayName(t.getDisplayName())).isEqualTo(t);
             }
+        }
+    }
+
+    @Nested
+    class IsAdjacentTo {
+
+        @Test
+        void benachbarteGebiete_sindAdjazent() {
+            assertThat(Territorries.PALATIN.isAdjacentTo(Territorries.LATERANO)).isTrue();
+            assertThat(Territorries.PALATIN.isAdjacentTo(Territorries.FORUM_TRASTEVEVEE)).isTrue();
+        }
+
+        @Test
+        void nichtBenachbarteGebiete_sindNichtAdjazent() {
+            assertThat(Territorries.PALATIN.isAdjacentTo(Territorries.EICHENWALD)).isFalse();
+            assertThat(Territorries.PALATIN.isAdjacentTo(Territorries.AGUALAINE)).isFalse();
+        }
+
+        @Test
+        void adjazenz_istSymmetrisch() {
+            assertThat(Territorries.LATERANO.isAdjacentTo(Territorries.PALATIN)).isTrue();
+            assertThat(Territorries.FORUM_TRASTEVEVEE.isAdjacentTo(Territorries.PALATIN)).isTrue();
+        }
+
+        @Test
+        void gebiet_istNichtAdjazentZuSichSelbst() {
+            assertThat(Territorries.PALATIN.isAdjacentTo(Territorries.PALATIN)).isFalse();
+        }
+    }
+
+    @Nested
+    class GetNeighbors {
+
+        @Test
+        void getNeighbors_gibtKorrekteMenge() {
+            assertThat(Territorries.PALATIN.getNeighbors())
+                    .containsExactlyInAnyOrder(Territorries.LATERANO, Territorries.FORUM_TRASTEVEVEE)
+                    .hasSize(2);
+        }
+
+        @Test
+        void getNeighbors_istUnveraenderlich() {
+            assertThatThrownBy(() -> Territorries.PALATIN.getNeighbors().add(Territorries.EICHENWALD))
+                    .isInstanceOf(UnsupportedOperationException.class);
         }
     }
 }

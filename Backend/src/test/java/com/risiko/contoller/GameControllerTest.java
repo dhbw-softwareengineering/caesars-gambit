@@ -1,10 +1,14 @@
 package com.risiko.contoller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.risiko.exception.GlobalExceptionHandler;
 import com.risiko.model.Gamestate;
 import com.risiko.model.Player;
 import com.risiko.model.Room;
+import com.risiko.model.Territorries;
 import com.risiko.model.User;
+
+import java.util.HashMap;
 import com.risiko.services.AuthService;
 import com.risiko.services.RoomService;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +57,9 @@ class GameControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(gameController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(gameController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
     }
 
     @Nested
@@ -64,6 +70,11 @@ class GameControllerTest {
             when(roomService.getRoomById(1)).thenReturn(room);
             when(room.getGamestate()).thenReturn(gamestate);
             when(gamestate.getCurrentPlayer()).thenReturn(player);
+            when(player.hasTerritory(Territorries.PALATIN)).thenReturn(true);
+            when(player.hasTerritory(Territorries.LATERANO)).thenReturn(true);
+            Map<Territorries, Integer> territories = new HashMap<>();
+            territories.put(Territorries.PALATIN, 5);
+            when(player.getTerritories()).thenReturn(territories);
 
             mockMvc.perform(post("/api/game/move")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -73,6 +84,68 @@ class GameControllerTest {
 
             verify(player).moveTroops(any(), any(), eq(3));
             verify(gamestate).sendGameStateUpdate();
+        }
+
+        @Test
+        void quellgebietNichtImBesitz_wirft400() throws Exception {
+            when(roomService.getRoomById(1)).thenReturn(room);
+            when(room.getGamestate()).thenReturn(gamestate);
+            when(gamestate.getCurrentPlayer()).thenReturn(player);
+            when(player.hasTerritory(Territorries.PALATIN)).thenReturn(false);
+
+            mockMvc.perform(post("/api/game/move")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            Map.of("roomId", 1, "from", "Palatin", "to", "Laterano", "sum", 3))))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void zielgebietNichtImBesitz_wirft400() throws Exception {
+            when(roomService.getRoomById(1)).thenReturn(room);
+            when(room.getGamestate()).thenReturn(gamestate);
+            when(gamestate.getCurrentPlayer()).thenReturn(player);
+            when(player.hasTerritory(Territorries.PALATIN)).thenReturn(true);
+            when(player.hasTerritory(Territorries.LATERANO)).thenReturn(false);
+
+            mockMvc.perform(post("/api/game/move")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            Map.of("roomId", 1, "from", "Palatin", "to", "Laterano", "sum", 3))))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void gebieteNichtBenachbart_wirft400() throws Exception {
+            when(roomService.getRoomById(1)).thenReturn(room);
+            when(room.getGamestate()).thenReturn(gamestate);
+            when(gamestate.getCurrentPlayer()).thenReturn(player);
+            when(player.hasTerritory(Territorries.PALATIN)).thenReturn(true);
+            when(player.hasTerritory(Territorries.EICHENWALD)).thenReturn(true);
+
+            mockMvc.perform(post("/api/game/move")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            Map.of("roomId", 1, "from", "Palatin", "to", "Eichenwald", "sum", 3))))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void nichtGenugTruppen_wirft400() throws Exception {
+            when(roomService.getRoomById(1)).thenReturn(room);
+            when(room.getGamestate()).thenReturn(gamestate);
+            when(gamestate.getCurrentPlayer()).thenReturn(player);
+            when(player.hasTerritory(Territorries.PALATIN)).thenReturn(true);
+            when(player.hasTerritory(Territorries.LATERANO)).thenReturn(true);
+            Map<Territorries, Integer> territories = new HashMap<>();
+            territories.put(Territorries.PALATIN, 2);
+            when(player.getTerritories()).thenReturn(territories);
+
+            mockMvc.perform(post("/api/game/move")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(
+                            Map.of("roomId", 1, "from", "Palatin", "to", "Laterano", "sum", 3))))
+                    .andExpect(status().isBadRequest());
         }
 
         @Test
