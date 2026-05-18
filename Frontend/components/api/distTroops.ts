@@ -9,7 +9,7 @@ export async function distTroops(sum: number, to: string, roomId: string) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to create room');
+        throw new Error('Failed to distribute troops');
     }
 
     return;

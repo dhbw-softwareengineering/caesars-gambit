@@ -9,7 +9,7 @@ export async function endTurn(roomId: string) {
     });
 
     if (!response.ok) {
-        throw new Error('Failed to create room');
+        throw new Error('Failed to end turn');
     }
 
     return;
