@@ -1,5 +1,9 @@
 package com.risiko.model;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Enum of territories. Enum constant names are sanitized (Java identifier safe).
  * Use {@link #getDisplayName()} to get the original label as shown in the SVG.
@@ -67,9 +71,151 @@ public enum Territorries {
     MONTE_SKARNO("Monte Skarno");
 
     private final String displayName;
+    private final Set<Territorries> neighbors = new HashSet<>();
 
     Territorries(String displayName) {
         this.displayName = displayName;
+    }
+
+    public boolean isAdjacentTo(Territorries other) {
+        return neighbors.contains(other);
+    }
+
+    public Set<Territorries> getNeighbors() {
+        return Collections.unmodifiableSet(neighbors);
+    }
+
+    private static void connect(Territorries a, Territorries b) {
+        a.neighbors.add(b);
+        b.neighbors.add(a);
+    }
+
+    // Auto-generated from Karte-neutral.svg (threshold 22px, edge-sampled)
+    static {
+        connect(AGUALAINE, AUGUSTA_NEMETERS);
+        connect(AGUALAINE, FARNOVIA);
+        connect(AGUALAINE, LISITONE);
+        connect(AGUALAINE, MONTEGRO);
+        connect(AGUALAINE, TUSKULUM);
+        connect(ALABRE_KUSTE, HARI);
+        connect(ALABRE_KUSTE, KRAILDUNE);
+        connect(ALABRE_KUSTE, SIZILLEBT_ERGANSEKUR);
+        connect(ALABRE_KUSTE, TENUBRA);
+        connect(ALABRE_KUSTE, TUKU);
+        connect(APENINII_TAL, PORRUGIERT);
+        connect(APENINII_TAL, SIZI_KUESTE);
+        connect(APENINII_TAL, VARENSIA);
+        connect(APILION, FELSDUENE);
+        connect(APILION, HARI);
+        connect(APILION, MENDRIA);
+        connect(APILION, PALERNO);
+        connect(APILION, TUKU);
+        connect(APPULLEN, ERALDIS);
+        connect(APPULLEN, LISITONE);
+        connect(APPULLEN, MENDRIA);
+        connect(APPULLEN, PERGUGIA);
+        connect(APPULLEN, TENUBRA);
+        connect(AQUITANE, AUGUSTA_NEMETERS);
+        connect(AQUITANE, MAURENIET);
+        connect(AUGUSTA_NEMETERS, FARNOVIA);
+        connect(AUGUSTA_NEMETERS, FOROUZA);
+        connect(AUGUSTA_NEMETERS, MAURENIET);
+        connect(CAMPANIA_A_LAPPE, EICHENWALD);
+        connect(CAMPANIA_A_LAPPE, FORUM_TRASTEVEVEE);
+        connect(DUENENSEE, JONISCHE_UFER);
+        connect(DUENENSEE, NEAPEL);
+        connect(DUENENSEE, PONRALMA);
+        connect(DUENENSEE, RENIAKUSTE);
+        connect(EICHENWALD, NEAPEL);
+        connect(EICHENWALD, PONRALMA);
+        connect(ERALDIS, MENDRIA);
+        connect(ERALDIS, TENUBRA);
+        connect(ERALDIS, TUKU);
+        connect(FARNOVIA, FOROUZA);
+        connect(FARNOVIA, LISITONE);
+        connect(FARNOVIA, MATTRA);
+        connect(FARNOVIA, PERGUGIA);
+        connect(FELSDUENE, HARI);
+        connect(FELSDUENE, PALERNO);
+        connect(FELSDUENE, SANDMEER);
+        connect(FELSDUENE_2, MOLASSNO);
+        connect(FELSDUENE_2, PALEMO);
+        connect(FELSDUENE_2, PONRALMA_UFER);
+        connect(FELSDUENE_2, SIZI_KUESTE);
+        connect(FLORENZZ, FORUM_VATLKANSTADT);
+        connect(FLORENZZ, PORRUGIERT);
+        connect(FLORENZZ, SANDFELSEN);
+        connect(FLORENZZ, TOSCANA_UND_UNBURIA);
+        connect(FLORENZZ, VARENSIA);
+        connect(FOROUZA, HORTHITAL);
+        connect(FOROUZA, MATTRA);
+        connect(FOROUZA, TOSCANA_UND_UNBURIA);
+        connect(FORUM_TRASTEVEVEE, PALATIN);
+        connect(FORUM_VATLKANSTADT, PORRUGIERT);
+        connect(HAIRON, MATTRA);
+        connect(HAIRON, MENDRIA);
+        connect(HAIRON, PERGUGIA);
+        connect(HAIRON, SANDFELSEN);
+        connect(HAIRON, SILBER_BUCHT);
+        connect(HARI, LUCERRA);
+        connect(HARI, SANDMEER);
+        connect(HARI, TUKU);
+        connect(HORTHITAL, MATTRA);
+        connect(HORTHITAL, SANDFELSEN);
+        connect(HORTHITAL, SILBER_BUCHT);
+        connect(HORTHITAL, TOSCANA_UND_UNBURIA);
+        connect(JONISCHE_UFER, RENIAKUSTE);
+        connect(KRAILDUNE, MAL_GOLF_TARENT);
+        connect(KRAILDUNE, SIZILLEBT_ERGANSEKUR);
+        connect(LATERANO, PALATIN);
+        connect(LAURIA, MARSKEM);
+        connect(LAURIA, TENUBRA);
+        connect(LISITONE, MARSKEM);
+        connect(LISITONE, MONTEGRO);
+        connect(LISITONE, PERGUGIA);
+        connect(LUCERRA, MOLASSNO);
+        connect(LUCERRA, PALEMO);
+        connect(LUCERRA, SANDMEER);
+        connect(LUCERRA, SZULIONEN);
+        connect(MAL_GOLF_TARENT, MESSNO_ERKANSI);
+        connect(MAL_GOLF_TARENT, MONTE_SKARNO);
+        connect(MAL_GOLF_TARENT, SIZILLEBT_ERGANSEKUR);
+        connect(MARSKEM, MONTEGRO);
+        connect(MATTRA, PERGUGIA);
+        connect(MATTRA, SANDFELSEN);
+        connect(MATTRA, SILBER_BUCHT);
+        connect(MAURENIET, TUSKULUM);
+        connect(MENDRIA, PALERNO);
+        connect(MENDRIA, PERGUGIA);
+        connect(MENDRIA, TUKU);
+        connect(MESSNO_ERKANSI, MONTE_SKARNO);
+        connect(MOLASSNO, PALEMO);
+        connect(MOLASSNO, SZULIONEN);
+        connect(MOLASSNO, TREVOIA);
+        connect(MONTE_SKARNO, PATATRA);
+        connect(MONTE_SKARNO, SIZILLEBT_ERGANSEKUR);
+        connect(MONTEGRO, TUSKULUM);
+        connect(NEAPEL, PONRALMA);
+        connect(NEAPEL, RENIAKUSTE);
+        connect(PALEMO, SANDMEER);
+        connect(PALEMO, SIZI_KUESTE);
+        connect(PALEMO, SZULIONEN);
+        connect(PALERNO, SILBER_BUCHT);
+        connect(PATATRA, TREVOIA);
+        connect(PONRALMA, RENIAKUSTE);
+        connect(PONRALMA, TRENTAKUSTE);
+        connect(PORRUGIERT, VARENSIA);
+        connect(RENIAKUSTE, STRUMICIACHE_UFER);
+        connect(RENIAKUSTE, TRENTAKUSTE);
+        connect(STRUMICIACHE_UFER, JONISCHE_UFER);
+        connect(SANDFELSEN, SILBER_BUCHT);
+        connect(SANDFELSEN, TOSCANA_UND_UNBURIA);
+        connect(SANDFELSEN, VARENSIA);
+        connect(SANDMEER, SIZI_KUESTE);
+        connect(SANDMEER, SZULIONEN);
+        connect(SILBER_BUCHT, VARENSIA);
+        connect(SZULIONEN, TREVOIA);
+        connect(TOSCANA_UND_UNBURIA, VARENSIA);
     }
 
     public String getDisplayName() {
